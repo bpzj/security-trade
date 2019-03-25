@@ -1,4 +1,5 @@
 import json
+import os
 import time
 import win32api
 import win32gui
@@ -17,13 +18,13 @@ def open_login_windows(exe_path=None):
         time.sleep(8)
 
 
-def call_back(hwnd, extra):
+def __call_back(hwnd, extra):
     cls_name = win32gui.GetClassName(hwnd)
     if cls_name == "Edit" or cls_name == "Button" or cls_name == "Static":
         extra.append(hwnd)
 
 
-def get_useful_position(login_hwnd):
+def __get_useful_position(login_hwnd):
     pos_dic = {}
     left, top, right, bottom = win32gui.GetWindowRect(login_hwnd)
     horizontal_1 = left + (right - left)*0.7
@@ -58,7 +59,7 @@ def pos_in_window_rect(position, window_rect):
 def get_useful_handle(login_hwnd):
     child_list = []
     win32gui.EnumChildWindows(login_hwnd, lambda hwnd, param: param.append(hwnd), child_list)
-    pos_dic = get_useful_position(login_hwnd)
+    pos_dic = __get_useful_position(login_hwnd)
     handles = {}
     for child in child_list:
         window_rect = win32gui.GetWindowRect(child)
@@ -83,7 +84,8 @@ def get_useful_handle(login_hwnd):
 
 def login(username=None, password=None, config=None):
     if config is None:
-        with open('config.json') as f:
+        conf_path = os.path.join(os.path.dirname(__file__), "config.json")
+        with open(conf_path) as f:
             config = json.load(f)
     account = config["account"]
     exe_path = config["xiandan_path"]
