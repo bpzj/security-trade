@@ -7,7 +7,7 @@ import win32con
 from util import ocr_string_from_hwnd
 
 
-def open_login_win(exe_path=None):
+def open_login_windows(exe_path=None):
     login_hwnd = win32gui.FindWindow("#32770", "用户登录")
     if login_hwnd <= 0:
         if exe_path is None:
@@ -81,27 +81,37 @@ def get_useful_handle(login_hwnd):
     return handles
 
 
-def login(username=None, password=None):
-    if username is None or password is None:
+def login(username=None, password=None, config=None):
+    if config is None:
         with open('config.json') as f:
-            data = json.load(f)
-        account = data["account"]
+            config = json.load(f)
+    account = config["account"]
+    exe_path = config["xiandan_path"]
+
+    # 打开登录窗口
+    open_login_windows(exe_path)
+
+    if username is None or password is None:
         if account is None:
             exit()
         else:
             username = account["username"]
             password = account["password"]
+
+    # 找到各个句柄
     login_hwnd = win32gui.FindWindow("#32770", "用户登录")
     handles = get_useful_handle(login_hwnd)
+
+    # 使用 windows 消息机制 登录
     win32gui.SendMessage(handles["username_hwnd"], win32con.WM_SETTEXT, None, username)
     win32gui.SendMessage(handles["password_hwnd"], win32con.WM_SETTEXT, None, password)
     identify_code = ocr_string_from_hwnd(handles["identify_img_hwnd"])
     win32gui.SendMessage(handles["identify_hwnd"], win32con.WM_SETTEXT, None, identify_code)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)
+    time.sleep(6)
 
 
 if __name__ == '__main__':
-    open_login_win()
     login()
 
