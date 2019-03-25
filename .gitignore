@@ -172,3 +172,5 @@ ENV/
 /research
 
 *.c
+
+config.json
