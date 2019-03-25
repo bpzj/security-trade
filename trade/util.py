@@ -1,3 +1,4 @@
+import os
 import win32gui
 import win32ui
 import win32con
@@ -57,10 +58,11 @@ def cap_img(hwnd=None):
 
 
 def img_to_str(image_path):
-    with open('config.json') as f:
-        data = json.load(f)
-    config = data["baidu-ocr-config"]
-    client = AipOcr(**config)
+    conf_path = os.path.join(os.path.dirname(__file__), "config.json")
+    with open(conf_path) as f:
+        config = json.load(f)
+    baidu_ocr = config["baidu-ocr-config"]
+    client = AipOcr(**baidu_ocr)
 
     with open(image_path, 'rb') as fp:
         image = fp.read()
