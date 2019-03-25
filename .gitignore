@@ -173,4 +173,5 @@ ENV/
 
 *.c
 
+# config file
 config.json
