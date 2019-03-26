@@ -1,5 +1,6 @@
 import ctypes
 import win32api
+from multiprocessing import Process
 
 import win32con
 import win32gui
@@ -24,6 +25,8 @@ class TradeApi:
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):
+        p = Process(target=handle_notice, args=(self.trade_hwnd,))
+        p.start()
         self.buy_panel.buy(stock_code, price, lot)
 
     def sell(self, stock_code, price, lot):
@@ -129,7 +132,7 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
-        get_notice_hwnd(self.__parent_trade)
+        # get_notice_hwnd(self.__parent_trade)
         # todo 查找提醒消息，委托确认窗口，校验内容后，确认下单
 
     def __send_msg(self, stock_code, price, lot):
@@ -148,6 +151,7 @@ class BuyPanel:
 
         win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
         win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
+        # time.sleep(0.04)
 
 
 class SellPanel:
@@ -174,34 +178,59 @@ def get_item_text(hwnd, max_len=4):
             max_len *= 2
 
 
-def get_notice_hwnd(trade_hwnd=None):
-    """ 下单 时的提示信息 """
+def handle_notice(trade_hwnd):
     # 获取所有 dialog 句柄,
-    # 提示信息 的父句柄不是 主窗口，
+    # 提示信息 的父句柄不是 主窗口，而提示信息的 owner 句柄是主句柄，根据窗口大小判断更快，
     def call_back(handle, hwnd_list):
-        if win32gui.GetClassName(handle) == "#32770":
+        left, top, right, bottom = win32gui.GetWindowRect(handle)
+        if win32gui.GetClassName(handle) == "#32770" and (right - left == 300) and (bottom - top == 195) \
+                and win32gui.GetWindow(handle, win32con.GW_OWNER) == trade_hwnd:
             hwnd_list.append(handle)
+    """ 下单 时的提示信息 """
+    while True:
+        dialog_list = []
+        win32gui.EnumWindows(call_back, dialog_list)
+        # 获得 每个 dialog 句柄的子句柄，判断出是否是提示信息的界面
+        notice_list = []
+        for dialog in dialog_list:
+            li = []
+            win32gui.EnumChildWindows(dialog, lambda handle, param: param.append(handle), li)
+            for l in li:
+                if win32gui.GetWindowText(l) == "提示信息":
+                    notice_list.append(dialog)
 
-    hwnd_l = []
-    win32gui.EnumWindows(call_back, hwnd_l)
-    if trade_hwnd:
-        for hwnd in hwnd_l:
-            owner_hwnd = win32gui.GetWindow(hwnd, win32con.GW_OWNER)
-            if owner_hwnd == trade_hwnd:
-                return hwnd
+        if len(notice_list) > 1:
+            exit(-1)
+        if len(notice_list) == 0:
+            continue
 
-    # for hwnd in hwnd_l:
-    #     # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
-    #     li = []
-    #     win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
-    #     for l in li:
-    #         if win32gui.GetWindowText(l) == "提示信息":
-    #             return hwnd
+        #
+        notice = notice_list[0]
+        notice_info = {}
+        notice_son = []
+        win32gui.EnumChildWindows(notice, lambda handle, param: param.append(handle), notice_son)
+        for son in notice_son:
+            txt = win32gui.GetWindowText(son)
+            cls = win32gui.GetClassName(son)
+            left, top, right, bottom = win32gui.GetWindowRect(son)
+            if cls == "Static" and right-left == 300:
+                notice_info.update(info=txt)
+            elif txt == "是(&Y)":
+                notice_info.update(yes_btn=son)
+            elif txt == "否(&N)":
+                notice_info.update(no_btn=son)
+
+        print(notice_info["info"])
+        if "超出涨跌停限制" in notice_info["info"]:
+            win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
+            win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
+        exit(0)
 
 
 if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
     trade_api.buy("000001", 2, 3)
-    print(get_item_text(get_notice_hwnd()))
     print(time.time() - i)
+    # print(win32gui.GetWindowText(0x240688))
+
