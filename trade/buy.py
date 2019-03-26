@@ -6,18 +6,18 @@ import win32gui
 import pywintypes
 
 
-def get_trade_hwnd():
-    hwnd_list = []
-    win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
-    for hwnd in hwnd_list:
-        if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:400000" in win32gui.GetClassName(hwnd):
-            return hwnd
-    print("未找到交易页面")
+def get_buy_dialog(trade_handle):
+    def call_back(handle, hwnd_list):
+        if win32gui.GetClassName(handle) == "#32770":
+            hwnd_list.append(handle)
 
-
-def enter_buy_panel(trade_handle):
-    win32gui.PostMessage(trade_handle, win32con.WM_KEYDOWN, win32con.VK_F1, 0)
-    win32gui.PostMessage(trade_handle, win32con.WM_KEYUP, win32con.VK_F1, 0)
+    hwnd_l = []
+    win32gui.EnumChildWindows(trade_handle, call_back, hwnd_l)
+    for hwnd in hwnd_l:
+        li = []
+        win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
+        for l in li:
+            print(win32gui.GetWindowText(l))
 
 
 def get_item_text(hwnd, max_len=4):
@@ -39,15 +39,13 @@ def get_item_text(hwnd, max_len=4):
 
 
 def buy(stock_code, lot_num):
-    trade_hwnd = get_trade_hwnd()
     enter_buy_panel(trade_hwnd)
-
+    get_buy_dialog(trade_hwnd)
 
 # print(win32gui.GetWindowText(0x101184))
 # print(win32gui.GetClassName(0x101184))
 # print(get_item_text(0x101184))
 # print(get_item_text(0x1F1632))
-# print(get_item_text(0xA063E))
 
 
 if __name__ == '__main__':
