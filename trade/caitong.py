@@ -1,7 +1,10 @@
 import ctypes
+import win32api
+
 import win32con
 import win32gui
 import pywintypes
+import time
 
 
 class TradeApi:
@@ -126,6 +129,7 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
+
         # todo 查找提醒消息，委托确认窗口，校验内容后，确认下单
 
     def __send_msg(self, stock_code, price, lot):
@@ -136,14 +140,14 @@ class BuyPanel:
         text = get_item_text(self.__edit_set["price"])
         if text:
             for i in range(0, len(text)):
-                win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, win32con.VK_BACK, 0)
+                win32api.PostMessage(self.__edit_set["price"], win32con.WM_CHAR, win32con.VK_BACK, 0)
         content = str(price)
         for char in list(content):
-            win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
-        win32gui.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot * 100))
+            win32api.PostMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
+        win32api.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot * 100))
 
-        win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
-        win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
+        win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
+        win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
 
 
 class SellPanel:
@@ -172,5 +176,7 @@ def get_item_text(hwnd, max_len=4):
 
 if __name__ == '__main__':
     trade_api = TradeApi()
+    i = time.time()
     trade_api.buy("000001", 2, 3)
+    print(time.time() - i)
 
