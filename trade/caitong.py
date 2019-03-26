@@ -31,6 +31,10 @@ class TradeApi:
         # todo
         pass
 
+    def get_hold(self):
+        # todo
+        pass
+
 
 class BuyPanel:
     def __init__(self, trade_hwnd):
