@@ -113,9 +113,13 @@ class BuyPanel:
 
     def buy(self, stock_code, price, lot):
         self.__init_handle()
+        self.__send_msg(stock_code, price, lot)
+
+    def __send_msg(self, stock_code, price, lot):
         # 使用 windows 消息机制 登录
         win32gui.SendMessage(self.__edit_set["code"], win32con.WM_SETTEXT, None, stock_code)
 
+        # WM_SETTEXT 不管用，使用 WM_CHAR 消息，先删除原来的内容
         text = get_item_text(self.__edit_set["price"])
         if text:
             for i in range(0, len(text)):
@@ -124,10 +128,9 @@ class BuyPanel:
         content = str(price)
         for char in list(content):
             win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
-        win32gui.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot*100))
-        # win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
-        # win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)
-        pass
+        win32gui.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot * 100))
+        win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
+        win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
 
 
 class SellPanel:
