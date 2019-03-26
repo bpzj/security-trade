@@ -220,7 +220,6 @@ def handle_notice(trade_hwnd):
             elif txt == "否(&N)":
                 notice_info.update(no_btn=son)
 
-        print(notice_info["info"])
         if "超出涨跌停限制" in notice_info["info"]:
             win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
             win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
