@@ -23,6 +23,14 @@ class TradeApi:
     def buy(self, stock_code, price, lot):
         self.buy_panel.buy(stock_code, price, lot)
 
+    def sell(self, stock_code, price, lot):
+        # todo
+        pass
+
+    def cancel(self):
+        # todo
+        pass
+
 
 class BuyPanel:
     def __init__(self, trade_hwnd):
