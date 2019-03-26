@@ -114,6 +114,7 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
+        # todo 查找提醒消息，委托确认窗口，校验内容后，确认下单
 
     def __send_msg(self, stock_code, price, lot):
         # 使用 windows 消息机制 登录
