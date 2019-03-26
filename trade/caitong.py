@@ -1,8 +1,8 @@
 import ctypes
-import time
 import win32con
 import win32gui
 import pywintypes
+
 
 class TradeApi:
     def __init__(self, trade_hwnd=None):
@@ -125,11 +125,11 @@ class BuyPanel:
         if text:
             for i in range(0, len(text)):
                 win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, win32con.VK_BACK, 0)
-
         content = str(price)
         for char in list(content):
             win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
         win32gui.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot * 100))
+
         win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
         win32gui.SendMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
 
