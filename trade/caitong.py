@@ -129,7 +129,7 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
-
+        get_notice_hwnd(self.__parent_trade)
         # todo 查找提醒消息，委托确认窗口，校验内容后，确认下单
 
     def __send_msg(self, stock_code, price, lot):
@@ -174,9 +174,34 @@ def get_item_text(hwnd, max_len=4):
             max_len *= 2
 
 
+def get_notice_hwnd(trade_hwnd=None):
+    """ 下单 时的提示信息 """
+    # 获取所有 dialog 句柄,
+    # 提示信息 的父句柄不是 主窗口，
+    def call_back(handle, hwnd_list):
+        if win32gui.GetClassName(handle) == "#32770":
+            hwnd_list.append(handle)
+
+    hwnd_l = []
+    win32gui.EnumWindows(call_back, hwnd_l)
+    if trade_hwnd:
+        for hwnd in hwnd_l:
+            owner_hwnd = win32gui.GetWindow(hwnd, win32con.GW_OWNER)
+            if owner_hwnd == trade_hwnd:
+                return hwnd
+
+    # for hwnd in hwnd_l:
+    #     # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
+    #     li = []
+    #     win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
+    #     for l in li:
+    #         if win32gui.GetWindowText(l) == "提示信息":
+    #             return hwnd
+
+
 if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
     trade_api.buy("000001", 2, 3)
+    print(get_item_text(get_notice_hwnd()))
     print(time.time() - i)
-
