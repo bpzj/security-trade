@@ -1,7 +1,8 @@
+import ctypes
 import time
-import win32gui
 import win32con
-
+import win32gui
+import pywintypes
 
 class TradeApi:
     def __init__(self, trade_hwnd=None):
@@ -114,7 +115,15 @@ class BuyPanel:
         self.__init_handle()
         # 使用 windows 消息机制 登录
         win32gui.SendMessage(self.__edit_set["code"], win32con.WM_SETTEXT, None, stock_code)
-        win32gui.SendMessage(self.__edit_set["price"], win32con.WM_SETTEXT, None, str(price))
+
+        text = get_item_text(self.__edit_set["price"])
+        if text:
+            for i in range(0, len(text)):
+                win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, win32con.VK_BACK, 0)
+
+        content = str(price)
+        for char in list(content):
+            win32gui.SendMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
         win32gui.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot*100))
         # win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
         # win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)
@@ -127,7 +136,25 @@ class SellPanel:
         pass
 
 
+def get_item_text(hwnd, max_len=4):
+    while True:
+        # 创建char[]
+        buf = ctypes.create_string_buffer(max_len)
+        # 获取内容
+        if win32gui.SendMessage(hwnd, win32con.WM_GETTEXT, max_len//2, buf) == 0:
+            return None
+        # 如果以0,0,0,0结尾，说明缓冲区够大
+        if (buf.raw[-4], buf.raw[-3], buf.raw[-2], buf.raw[-1]) == (0, 0, 0, 0):
+            # 转成utf-8
+            text = pywintypes.UnicodeFromRaw(buf.raw)
+            # 去掉末尾的0就能返回
+            return text.strip('\00')
+        # 否则把缓冲区扩大一倍重试
+        else:
+            max_len *= 2
+
+
 if __name__ == '__main__':
     trade_api = TradeApi()
-    trade_api.buy("000001", 12.12, 4)
+    trade_api.buy("000001", 2, 3)
 
