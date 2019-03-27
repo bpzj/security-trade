@@ -25,8 +25,8 @@ class TradeApi:
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):
-        p = Process(target=handle_notice, args=(self.trade_hwnd,))
-        p.start()
+        p = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
+        print(p.start())
         self.buy_panel.buy(stock_code, price, lot)
 
     def sell(self, stock_code, price, lot):
@@ -132,8 +132,6 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
-        # get_notice_hwnd(self.__parent_trade)
-        # todo 查找提醒消息，委托确认窗口，校验内容后，确认下单
 
     def __send_msg(self, stock_code, price, lot):
         # 使用 windows 消息机制 登录
@@ -178,7 +176,7 @@ def get_item_text(hwnd, max_len=4):
             max_len *= 2
 
 
-def handle_notice(trade_hwnd):
+def handle_notice(trade_hwnd, stock_code, price, lot):
     # 获取 desktop 句柄
     # desktop = win32gui.GetDesktopWindow()
 
@@ -194,7 +192,7 @@ def handle_notice(trade_hwnd):
         if win32gui.GetClassName(handle) == "#32770" and win32gui.GetWindow(handle, win32con.GW_OWNER) == trade_hwnd:
             if (_right - _left == 300) and (_bottom - _top == 195):
                 dialog_l.append(handle)
-            elif (_right - _left == 337) and (_bottom - _top == 229):
+            elif (_right - _left == 345) and (_bottom - _top == 229):
                 dialog_l.append(handle)
 
     """ 下单 时的提示信息 """
@@ -203,7 +201,7 @@ def handle_notice(trade_hwnd):
         win32gui.EnumWindows(call_back, dialog_list)
         # 获得 每个 dialog 句柄的子句柄，判断出是 提示信息 或 委托确认 弹出窗
         notice_list = []
-        cofirm_list = []
+        confirm_list = []
         for dialog in dialog_list:
             li = []
             win32gui.EnumChildWindows(dialog, lambda handle, param: param.append(handle), li)
@@ -212,14 +210,39 @@ def handle_notice(trade_hwnd):
                 if txt == "提示信息":
                     notice_list.append(dialog)
                 elif txt == "委托确认":
-                    cofirm_list.append(dialog)
+                    confirm_list.append(dialog)
 
-        if len(notice_list) > 1 or len(cofirm_list) > 1:
+        if len(notice_list) > 1 or len(confirm_list) > 1:
             exit(-1)
-        # 如果存在委托窗口，判断无误下单后 退出
-        if len(cofirm_list) == 1:
-            # todo 确认委托 后退出
-            return
+        # 如果没有提示信息窗口，而存在委托窗口，判断无误下单后 退出
+        print(confirm_list)
+        if len(confirm_list) == 1 and len(notice_list) == 0:
+            # 确认委托 或 取消委托 后退出
+            confirm = confirm_list[0]
+            confirm_info = {}
+            confirm_son = []
+            win32gui.EnumChildWindows(confirm, lambda handle, param: param.append(handle), confirm_son)
+            for son in confirm_son:
+                txt = win32gui.GetWindowText(son)
+                # print(txt)
+                cls = win32gui.GetClassName(son)
+                left, top, right, bottom = win32gui.GetWindowRect(son)
+                if cls == "Static" and right - left == 227:
+                    print(txt)
+                    confirm_info.update(info=txt)
+                elif txt == "是(&Y)":
+                    confirm_info.update(yes_btn=son)
+                elif txt == "否(&N)":
+                    confirm_info.update(no_btn=son)
+
+            if stock_code in confirm_info["info"] and str(price) in confirm_info["info"] \
+                    and str(lot*100) in confirm_info["info"]:
+                win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONDOWN, None, None)
+                win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONUP, None, None)
+            else:
+                win32api.PostMessage(confirm_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
+                win32api.PostMessage(confirm_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
+            return "成功"
 
         # 如果当前只存在 提示信息窗口
         if len(notice_list) == 1:
@@ -238,7 +261,7 @@ def handle_notice(trade_hwnd):
                 elif txt == "否(&N)":
                     notice_info.update(no_btn=son)
 
-            # 发送取消 委托后，直接退出
+            # 提示信息弹出框 发送取消 后，直接退出
             if "超出涨跌停限制" in notice_info["info"]:
                 win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
@@ -250,7 +273,10 @@ if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
     # for j in range(0, 10):
-    trade_api.buy("000001", 2, 3)
+    trade_api.buy("600029", 7.85, 1)
+    # print(win32gui.GetWindowText(0x001612AC))
+    # print(win32gui.GetClassName(0x001612AC))
+
     print(time.time() - i)
     # print(win32gui.GetWindowText(0x240688))
 
