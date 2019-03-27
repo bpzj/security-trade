@@ -27,24 +27,18 @@ def __call_back(hwnd, extra):
 def __get_useful_position(login_hwnd):
     pos_dic = {}
     left, top, right, bottom = win32gui.GetWindowRect(login_hwnd)
-    horizontal_1 = left + (right - left)*0.7
-    vertical_1 = top + (bottom-top)*0.41
-    space_1 = (bottom-top)*0.1166
+    horizontal = right - left
+    vertical = bottom-top
+    # 登录模式: 独立交易 按钮
+    pos_dic.update(only_trade_pos=(horizontal*0.7953 + left, vertical*0.219 + top))
     # 输入账号框的位置中心
-    pos_dic.update(username_pos=(horizontal_1, vertical_1))
+    pos_dic.update(username_pos=(horizontal*0.5 + left, vertical*0.4353 + top))
     # 输入交易密码的位置中心
-    pos_dic.update(password_pos=(horizontal_1, vertical_1 + space_1))
+    pos_dic.update(password_pos=(horizontal*0.5 + left, vertical*0.5198 + top))
     # 输入验证码的位置中心
-    pos_dic.update(identify_pos=(horizontal_1, vertical_1 + space_1*2))
-    # 验证码图片 的位置中心
-    horizontal_2 = left + (right - left)*0.8973
-    pos_dic.update(identify_img=(horizontal_2, vertical_1 + space_1 * 2))
-
-    # 选择登录模式的位置中心
-    pos_dic.update(mode_pos=(horizontal_1, vertical_1 + space_1*3))
+    pos_dic.update(identify_pos=(horizontal*0.6174 + left, vertical*0.628 + top))
     # 登录按钮 的位置中心
-    space_2 = (bottom-top)*0.9028
-    pos_dic.update(login_btn_pos=(horizontal_1, top + space_2))
+    pos_dic.update(login_btn_pos=(horizontal*0.3137 + left, vertical*0.7282 + top))
 
     return pos_dic
 
@@ -57,29 +51,26 @@ def pos_in_window_rect(position, window_rect):
 
 
 def get_useful_handle(login_hwnd):
-    child_list = []
-    win32gui.EnumChildWindows(login_hwnd, lambda hwnd, param: param.append(hwnd), child_list)
     pos_dic = __get_useful_position(login_hwnd)
-    handles = {}
-    for child in child_list:
-        window_rect = win32gui.GetWindowRect(child)
-        if win32gui.GetClassName(child) == "Edit":
-            if pos_in_window_rect(pos_dic["username_pos"], window_rect):
-                handles.update(username_hwnd=child)
-            elif pos_in_window_rect(pos_dic["password_pos"], window_rect):
-                handles.update(password_hwnd=child)
-            elif pos_in_window_rect(pos_dic["identify_pos"], window_rect):
-                handles.update(identify_hwnd=child)
-        elif win32gui.GetClassName(child) == "ComboBox":
-            if pos_in_window_rect(pos_dic["mode_pos"], window_rect):
-                handles.update(mode_hwnd=child)
-        elif win32gui.GetClassName(child) == "Static":
-            if pos_in_window_rect(pos_dic["identify_img"], window_rect):
-                handles.update(identify_img_hwnd=child)
-        elif win32gui.GetClassName(child) == "Button":
+
+    def __get_useful_handle(handle, handle_dic):
+        window_rect = win32gui.GetWindowRect(handle)
+        if win32gui.GetClassName(handle) == "AfxWnd42":
             if pos_in_window_rect(pos_dic["login_btn_pos"], window_rect):
-                handles.update(login_btn_hwnd=child)
-    return handles
+                handle_dic.update(login_btn_hwnd=handle)
+            elif pos_in_window_rect(pos_dic["only_trade_pos"], window_rect):
+                handle_dic.update(only_trade_hwnd=handle)
+        elif win32gui.GetClassName(handle) == "Edit" and pos_in_window_rect(pos_dic["username_pos"], window_rect):
+            handle_dic.update(username_hwnd=handle)
+        elif win32gui.GetClassName(handle) == "SafeEdit":
+            if pos_in_window_rect(pos_dic["password_pos"], window_rect):
+                handle_dic.update(password_hwnd=handle)
+            elif pos_in_window_rect(pos_dic["identify_pos"], window_rect):
+                handle_dic.update(identify_hwnd=handle)
+    useful_handles = {}
+    win32gui.EnumChildWindows(login_hwnd, __get_useful_handle, useful_handles)
+
+    return useful_handles
 
 
 def login(username=None, password=None, config=None):
