@@ -25,9 +25,9 @@ class TradeApi:
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):
-        p = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
-        print(p.start())
-        self.buy_panel.buy(stock_code, price, lot)
+        confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
+        print(confirm_pro.start())
+        return self.buy_panel.buy(stock_code, price, lot)
 
     def sell(self, stock_code, price, lot):
         # todo
@@ -132,6 +132,7 @@ class BuyPanel:
     def buy(self, stock_code, price, lot):
         self.__init_handle()
         self.__send_msg(stock_code, price, lot)
+        return self.__get_order_msg()
 
     def __send_msg(self, stock_code, price, lot):
         # 使用 windows 消息机制 登录
@@ -150,6 +151,57 @@ class BuyPanel:
         win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONDOWN, None, None)
         win32api.PostMessage(self.__edit_set["buy_btn"], win32con.WM_LBUTTONUP, None, None)
         # time.sleep(0.04)
+
+    def __get_order_msg(self):
+        # 根据 弹出窗口大小判断更快，所以按大小判断
+        def call_back(handle, dialog_l):
+            _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
+            # (_right - _left == 300) and (_bottom - _top == 195)
+            # print(win32gui.GetParent(handle))
+            if win32gui.GetClassName(handle) == "#32770" and \
+                    win32gui.GetWindow(handle, win32con.GW_OWNER) == self.__parent_trade:
+                if (_right - _left == 362) and (_bottom - _top == 204):
+                    dialog_l.append(handle)
+
+        """ 下单 时不论成功失败，肯定在最后有一个 提示 弹框 """
+        while True:
+            dialog_list = []
+            win32gui.EnumWindows(call_back, dialog_list)
+            # 获得 每个 dialog 句柄的子句柄，判断出是 提示 弹出窗
+            notice_list = []
+            for dialog in dialog_list:
+                li = []
+                win32gui.EnumChildWindows(dialog, lambda handle, param: param.append(handle), li)
+                for l in li:
+                    txt = win32gui.GetWindowText(l)
+                    if txt == "提示":
+                        notice_list.append(dialog)
+
+            if len(notice_list) > 1:
+                exit(-1)
+            # 如果没有提示信息窗口，而存在委托窗口，判断无误下单后 退出
+            if len(notice_list) == 0:
+                continue
+
+            if len(notice_list) == 1:
+                notice = notice_list[0]
+                notice_info = {}
+                notice_son = []
+                win32gui.EnumChildWindows(notice, lambda handle, param: param.append(handle), notice_son)
+                for son in notice_son:
+                    txt = win32gui.GetWindowText(son)
+                    cls = win32gui.GetClassName(son)
+                    left, top, right, bottom = win32gui.GetWindowRect(son)
+                    if cls == "Static" and right - left == 332:
+                        notice_info.update(info=txt)
+                    elif txt == "确定" or txt == "终止":
+                        notice_info.update(confirm_btn=son)
+
+                # 提示信息弹出框 发送取消 后，直接退出
+                win32api.PostMessage(notice_info["confirm_btn"], win32con.WM_LBUTTONDOWN, None, None)
+                win32api.PostMessage(notice_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
+                return notice_info["info"]
+                # 如果发送 继续委托，还要继续循环
 
 
 class SellPanel:
@@ -215,7 +267,6 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
         if len(notice_list) > 1 or len(confirm_list) > 1:
             exit(-1)
         # 如果没有提示信息窗口，而存在委托窗口，判断无误下单后 退出
-        print(confirm_list)
         if len(confirm_list) == 1 and len(notice_list) == 0:
             # 确认委托 或 取消委托 后退出
             confirm = confirm_list[0]
@@ -228,7 +279,6 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                 cls = win32gui.GetClassName(son)
                 left, top, right, bottom = win32gui.GetWindowRect(son)
                 if cls == "Static" and right - left == 227:
-                    print(txt)
                     confirm_info.update(info=txt)
                 elif txt == "是(&Y)":
                     confirm_info.update(yes_btn=son)
@@ -273,7 +323,8 @@ if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
     # for j in range(0, 10):
-    trade_api.buy("600029", 7.85, 1)
+    msg = trade_api.buy("600029", 7.85, 1)
+    print(msg)
     # print(win32gui.GetWindowText(0x001612AC))
     # print(win32gui.GetClassName(0x001612AC))
 
