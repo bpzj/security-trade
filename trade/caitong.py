@@ -249,6 +249,7 @@ def handle_notice(trade_hwnd):
 if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
+    # for j in range(0, 10):
     trade_api.buy("000001", 2, 3)
     print(time.time() - i)
     # print(win32gui.GetWindowText(0x240688))
