@@ -88,7 +88,7 @@ def login(username=None, password=None, config=None):
         with open(conf_path) as f:
             config = json.load(f)
     account = config["account"]
-    exe_path = config["xiandan_path"]
+    exe_path = config["exe_path"]
 
     # 打开登录窗口
     open_login_windows(exe_path)

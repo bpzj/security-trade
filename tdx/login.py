@@ -9,10 +9,10 @@ from util.util import ocr_string_from_hwnd
 
 
 def open_login_windows(exe_path=None):
-    login_hwnd = win32gui.FindWindow("#32770", "用户登录")
+    login_hwnd = win32gui.FindWindow("#32770", "财通证券财路通V6.49")
     if login_hwnd <= 0:
         if exe_path is None:
-            win32api.WinExec("D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe", win32con.SW_SHOWNORMAL)
+            win32api.WinExec("D:\\Program Files (x86)\\CaiTong-TongDaXin\\TdxW.exe", win32con.SW_SHOWNORMAL)
         else:
             win32api.WinExec(exe_path, win32con.SW_SHOWNORMAL)
         time.sleep(8)
@@ -88,7 +88,7 @@ def login(username=None, password=None, config=None):
         with open(conf_path) as f:
             config = json.load(f)
     account = config["account"]
-    exe_path = config["xiandan_path"]
+    exe_path = config["exe_path"]
 
     # 打开登录窗口
     open_login_windows(exe_path)
@@ -101,7 +101,7 @@ def login(username=None, password=None, config=None):
             password = account["password"]
 
     # 找到各个句柄
-    login_hwnd = win32gui.FindWindow("#32770", "用户登录")
+    login_hwnd = win32gui.FindWindow("#32770", "财通证券财路通V6.49")
     handles = get_useful_handle(login_hwnd)
 
     # 使用 windows 消息机制 登录
