@@ -11,18 +11,23 @@ import time
 class TradeApi:
     def __init__(self, trade_hwnd=None):
         self.trade_hwnd = trade_hwnd
+        self.son_handles = {}
         if trade_hwnd is None:
-            self.__set_trade_hwnd()
+            self.trade_hwnd = win32gui.FindWindow("TdxW_MainFrame_Class", None)
+        self.set_useful_hwnd()
         self.buy_panel = BuyPanel(self.trade_hwnd)
 
-    def __set_trade_hwnd(self):
-        parent_hwnd = win32gui.FindWindow("TdxW_MainFrame_Class", None)
+    def set_useful_hwnd(self):
         hwnd_list = []
-        win32gui.EnumChildWindows(parent_hwnd, lambda handle, param: param.append(handle), hwnd_list)
+        win32gui.EnumChildWindows(self.trade_hwnd, lambda handle, param: param.append(handle), hwnd_list)
         for hwnd in hwnd_list:
-            if win32gui.GetWindowText(hwnd) == "通达信网上交易V6":
-                self.trade_hwnd = hwnd
-                return
+            print(win32gui.GetWindowText(hwnd))
+            print(win32gui.GetClassName(hwnd))
+            if win32gui.GetClassName(hwnd) == "_mhpBarTop":
+                self.son_handles.update(side_bar_hwnd=hwnd)
+            elif win32gui.GetClassName(hwnd) == "SysTreeView32":
+                print(win32gui.GetWindowText(hwnd))
+            # return
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):
@@ -73,14 +78,14 @@ class BuyPanel:
         win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
         for hwnd in hwnd_l:
             print(win32gui.GetWindowText(hwnd))
-            # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
-            li = []
-            win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
-            for l in li:
-                if win32gui.GetWindowText(l) == "买入股票":
-                    self.__handle = hwnd
-                    self.__hwnd_list = li
-                    break
+            # # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
+            # li = []
+            # win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
+            # for l in li:
+            #     if win32gui.GetWindowText(l) == "买入股票":
+            #         self.__handle = hwnd
+            #         self.__hwnd_list = li
+            #         break
         # 更新 证券代码，买入价格，买入数量，买入按钮 四个有用的句柄
         self.__set_useful_handle()
 
@@ -261,11 +266,31 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
 
 
 if __name__ == '__main__':
-    trade_api = TradeApi()
-    i = time.time()
-    trade_api.buy("600029", 7.85, 1)
-    # print(win32gui.GetWindowText(0x001612AC))
-    # print(win32gui.GetClassName(0x001612AC))
-    # print(win32gui.GetWindowText(0x240688))
-    print(time.time() - i)
+    # trade_api = TradeApi()
+    # i = time.time()
+    # trade_api.buy("600029", 7.85, 1)
 
+    # print(time.time() - i)
+
+    # print(win32gui.GetWindowText(0x240688))
+
+    hand = 0x00250DE4
+    print(win32gui.GetClassName(hand))
+    print(win32gui.GetWindowText(hand))
+    son_list = []
+    win32gui.EnumChildWindows(hand, lambda handle, param: param.append(handle), son_list)
+    SysTreeView32_list = []
+    for son in son_list:
+        # print(win32gui.GetWindowText(son))
+        # print(win32gui.GetClassName(son))
+        # print(win32gui.GetWindowRect(son))
+        if win32gui.GetClassName(son) == "SysTreeView32":
+            SysTreeView32_list.append(son)
+
+    for tree in SysTreeView32_list:
+        t = []
+        win32gui.EnumChildWindows(tree, lambda handle, param: param.append(handle), t)
+        for son in t:
+            print(win32gui.GetWindowText(son))
+            print(win32gui.GetClassName(son))
+            print(win32gui.GetWindowRect(son))
