@@ -1,11 +1,13 @@
+import ctypes
 import json
 import os
 import time
 import win32api
 import win32gui
 
+import pywintypes
 import win32con
-from util.util import ocr_string_from_hwnd
+from util import ocr_string_from_hwnd
 
 
 def open_login_windows(exe_path=None):
@@ -96,13 +98,22 @@ def login(username=None, password=None, config=None):
     handles = get_useful_handle(login_hwnd)
 
     # 使用 windows 消息机制 登录
+
     win32gui.SendMessage(handles["username_hwnd"], win32con.WM_SETTEXT, None, username)
-    win32gui.SendMessage(handles["password_hwnd"], win32con.WM_SETTEXT, None, password)
-    identify_code = ocr_string_from_hwnd(handles["identify_img_hwnd"])
-    win32gui.SendMessage(handles["identify_hwnd"], win32con.WM_SETTEXT, None, identify_code)
-    win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
-    win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)
-    time.sleep(6)
+    for i in range(0, 10):
+        win32api.PostMessage(handles["password_hwnd"], win32con.WM_CHAR, win32con.VK_BACK, 0)
+    for char in list(password):
+        win32api.PostMessage(handles["password_hwnd"], win32con.WM_CHAR, ord(char), 0)
+    # win32gui.SendMessage(handles["password_hwnd"], win32con.WM_SETTEXT, None, password)
+    identify_code = ocr_string_from_hwnd(login_hwnd)
+    # win32gui.SendMessage(handles["identify_hwnd"], win32con.WM_SETTEXT, None, identify_code)
+    for char in list(identify_code):
+        win32api.PostMessage(handles["identify_hwnd"], win32con.WM_CHAR, ord(char), 0)
+    time.sleep(0.5)
+
+    win32api.PostMessage(login_hwnd, win32con.WM_KEYDOWN, win32con.VK_RETURN, None)
+    win32api.PostMessage(login_hwnd, win32con.WM_KEYUP, win32con.VK_RETURN, None)
+    time.sleep(5)
 
 
 if __name__ == '__main__':
