@@ -216,11 +216,13 @@ def handle_notice(trade_hwnd):
 
         if len(notice_list) > 1 or len(cofirm_list) > 1:
             exit(-1)
-        if len(notice_list) == 0 and len(cofirm_list) == 0:
-            continue
+        # 如果存在委托窗口，判断无误下单后 退出
+        if len(cofirm_list) == 1:
+            # todo 确认委托 后退出
+            return
 
         # 如果当前只存在 提示信息窗口
-        if len(notice_list) == 1 and len(cofirm_list) == 0:
+        if len(notice_list) == 1:
             notice = notice_list[0]
             notice_info = {}
             notice_son = []
@@ -236,10 +238,12 @@ def handle_notice(trade_hwnd):
                 elif txt == "否(&N)":
                     notice_info.update(no_btn=son)
 
+            # 发送取消 委托后，直接退出
             if "超出涨跌停限制" in notice_info["info"]:
                 win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
-        return
+                return
+            # 如果发送 继续委托，还要继续循环
 
 
 if __name__ == '__main__':
