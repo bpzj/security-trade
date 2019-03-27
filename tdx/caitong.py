@@ -16,17 +16,18 @@ class TradeApi:
         self.buy_panel = BuyPanel(self.trade_hwnd)
 
     def __set_trade_hwnd(self):
+        parent_hwnd = win32gui.FindWindow("TdxW_MainFrame_Class", None)
         hwnd_list = []
-        win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
+        win32gui.EnumChildWindows(parent_hwnd, lambda handle, param: param.append(handle), hwnd_list)
         for hwnd in hwnd_list:
-            if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:400000" in win32gui.GetClassName(hwnd):
+            if win32gui.GetWindowText(hwnd) == "通达信网上交易V6":
                 self.trade_hwnd = hwnd
                 return
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):
-        p = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
-        print(p.start())
+        # p = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
+        # print(p.start())
         self.buy_panel.buy(stock_code, price, lot)
 
     def sell(self, stock_code, price, lot):
@@ -49,14 +50,6 @@ class BuyPanel:
         self.__hwnd_list = None
         self.__edit_set = {}
 
-    def __enter_buy_panel(self):
-        """
-        向主句柄 发送 F1，调出 买入股票 界面
-        :return:
-        """
-        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYDOWN, win32con.VK_F1, 0)
-        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYUP, win32con.VK_F1, 0)
-
     def __init_handle(self):
         """ 获取 买入界面的 handle 值， 买入界面 的 子句柄
         每点击几次 买入和卖出界面的 句柄都会重建，所以先校验 当前的 handle是否有效
@@ -72,9 +65,6 @@ class BuyPanel:
                     if win32gui.GetWindowText(l) == "买入股票":
                         return
 
-        # 如果无效，向下执行，要先 发送 F1 , 调出界面
-        self.__enter_buy_panel()
-
         # 获取所有 dialog 子句柄
         def call_back(handle, hwnd_list):
             if win32gui.GetClassName(handle) == "#32770":
@@ -82,6 +72,7 @@ class BuyPanel:
         hwnd_l = []
         win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
         for hwnd in hwnd_l:
+            print(win32gui.GetWindowText(hwnd))
             # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
             li = []
             win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
@@ -272,11 +263,9 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
 if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
-    # for j in range(0, 10):
     trade_api.buy("600029", 7.85, 1)
     # print(win32gui.GetWindowText(0x001612AC))
     # print(win32gui.GetClassName(0x001612AC))
-
-    print(time.time() - i)
     # print(win32gui.GetWindowText(0x240688))
+    print(time.time() - i)
 

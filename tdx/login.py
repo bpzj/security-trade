@@ -1,11 +1,8 @@
-import ctypes
 import json
 import os
 import time
 import win32api
 import win32gui
-
-import pywintypes
 import win32con
 from util import ocr_string_from_hwnd
 
