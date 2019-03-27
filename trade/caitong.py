@@ -182,8 +182,8 @@ def handle_notice(trade_hwnd):
     # 获取所有 dialog 句柄,
     # 提示信息 的父句柄不是 主窗口，而提示信息的 owner 句柄是主句柄，根据窗口大小判断更快，
     def call_back(handle, hwnd_list):
-        left, top, right, bottom = win32gui.GetWindowRect(handle)
-        if win32gui.GetClassName(handle) == "#32770" and (right - left == 300) and (bottom - top == 195) \
+        _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
+        if win32gui.GetClassName(handle) == "#32770" and (_right - _left == 300) and (_bottom - _top == 195) \
                 and win32gui.GetWindow(handle, win32con.GW_OWNER) == trade_hwnd:
             hwnd_list.append(handle)
     """ 下单 时的提示信息 """
