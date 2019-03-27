@@ -179,51 +179,67 @@ def get_item_text(hwnd, max_len=4):
 
 
 def handle_notice(trade_hwnd):
-    # 获取所有 dialog 句柄,
-    # 提示信息 的父句柄不是 主窗口，而提示信息的 owner 句柄是主句柄，根据窗口大小判断更快，
-    def call_back(handle, hwnd_list):
+    # 获取 desktop 句柄
+    # desktop = win32gui.GetDesktopWindow()
+
+    # 获取所有 提示信息 或 委托确认 弹出窗的句柄
+    # 两者的共同特征是
+    #       父句柄 是 #32769 Desktop 主窗口，pywin32 GetParent 函数获取的不是父窗口的句柄
+    #       owner 句柄是 交易窗口主句柄
+    # 根据 弹出窗口大小判断更快，所以按大小判断
+    def call_back(handle, dialog_l):
         _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
-        if win32gui.GetClassName(handle) == "#32770" and (_right - _left == 300) and (_bottom - _top == 195) \
-                and win32gui.GetWindow(handle, win32con.GW_OWNER) == trade_hwnd:
-            hwnd_list.append(handle)
+        # (_right - _left == 300) and (_bottom - _top == 195)
+        # print(win32gui.GetParent(handle))
+        if win32gui.GetClassName(handle) == "#32770" and win32gui.GetWindow(handle, win32con.GW_OWNER) == trade_hwnd:
+            if (_right - _left == 300) and (_bottom - _top == 195):
+                dialog_l.append(handle)
+            elif (_right - _left == 337) and (_bottom - _top == 229):
+                dialog_l.append(handle)
+
     """ 下单 时的提示信息 """
     while True:
         dialog_list = []
         win32gui.EnumWindows(call_back, dialog_list)
-        # 获得 每个 dialog 句柄的子句柄，判断出是否是提示信息的界面
+        # 获得 每个 dialog 句柄的子句柄，判断出是 提示信息 或 委托确认 弹出窗
         notice_list = []
+        cofirm_list = []
         for dialog in dialog_list:
             li = []
             win32gui.EnumChildWindows(dialog, lambda handle, param: param.append(handle), li)
             for l in li:
-                if win32gui.GetWindowText(l) == "提示信息":
+                txt = win32gui.GetWindowText(l)
+                if txt == "提示信息":
                     notice_list.append(dialog)
+                elif txt == "委托确认":
+                    cofirm_list.append(dialog)
 
-        if len(notice_list) > 1:
+        if len(notice_list) > 1 or len(cofirm_list) > 1:
             exit(-1)
-        if len(notice_list) == 0:
+        if len(notice_list) == 0 and len(cofirm_list) == 0:
             continue
 
-        #
-        notice = notice_list[0]
-        notice_info = {}
-        notice_son = []
-        win32gui.EnumChildWindows(notice, lambda handle, param: param.append(handle), notice_son)
-        for son in notice_son:
-            txt = win32gui.GetWindowText(son)
-            cls = win32gui.GetClassName(son)
-            left, top, right, bottom = win32gui.GetWindowRect(son)
-            if cls == "Static" and right-left == 300:
-                notice_info.update(info=txt)
-            elif txt == "是(&Y)":
-                notice_info.update(yes_btn=son)
-            elif txt == "否(&N)":
-                notice_info.update(no_btn=son)
+        # 如果当前只存在 提示信息窗口
+        if len(notice_list) == 1 and len(cofirm_list) == 0:
+            notice = notice_list[0]
+            notice_info = {}
+            notice_son = []
+            win32gui.EnumChildWindows(notice, lambda handle, param: param.append(handle), notice_son)
+            for son in notice_son:
+                txt = win32gui.GetWindowText(son)
+                cls = win32gui.GetClassName(son)
+                left, top, right, bottom = win32gui.GetWindowRect(son)
+                if cls == "Static" and right-left == 300:
+                    notice_info.update(info=txt)
+                elif txt == "是(&Y)":
+                    notice_info.update(yes_btn=son)
+                elif txt == "否(&N)":
+                    notice_info.update(no_btn=son)
 
-        if "超出涨跌停限制" in notice_info["info"]:
-            win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
-            win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
-        exit(0)
+            if "超出涨跌停限制" in notice_info["info"]:
+                win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONDOWN, None, None)
+                win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
+        return
 
 
 if __name__ == '__main__':
