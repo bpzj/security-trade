@@ -140,7 +140,7 @@ if __name__ == '__main__':
     # for j in range(0, 5):
     msg = trade_api.buy("600029", 7.85, 1)
     print(msg)
-    time.sleep(1)
+    time.sleep(0.5)
     # print(win32gui.GetWindowText(0x001612AC))
     # print(win32gui.GetClassName(0x001612AC))
     msg = trade_api.sell("600029", 7.85, 1)
