@@ -4,6 +4,7 @@ import win32con
 import win32gui
 import time
 from buy import BuyPanel
+from sell import SellPanel
 
 
 class TradeApi:
@@ -12,6 +13,7 @@ class TradeApi:
         if trade_hwnd is None:
             self.__set_trade_hwnd()
         self.buy_panel = BuyPanel(self.trade_hwnd)
+        self.sell_panel = SellPanel(self.trade_hwnd)
 
     def __set_trade_hwnd(self):
         hwnd_list = []
@@ -24,12 +26,13 @@ class TradeApi:
 
     def buy(self, stock_code, price, lot):
         confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
-        print(confirm_pro.start())
+        confirm_pro.start()
         return self.buy_panel.buy(stock_code, price, lot)
 
     def sell(self, stock_code, price, lot):
-        # todo
-        pass
+        confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
+        confirm_pro.start()
+        return self.sell_panel.sell(stock_code, price, lot)
 
     def cancel(self):
         # todo
@@ -137,8 +140,10 @@ if __name__ == '__main__':
     # for j in range(0, 5):
     msg = trade_api.buy("600029", 7.85, 1)
     print(msg)
-    # time.sleep(0.2)
+    time.sleep(1)
     # print(win32gui.GetWindowText(0x001612AC))
     # print(win32gui.GetClassName(0x001612AC))
+    msg = trade_api.sell("600029", 7.85, 1)
+    print(msg)
 
     print(time.time() - i)
