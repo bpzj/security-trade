@@ -140,7 +140,7 @@ if __name__ == '__main__':
     trade_api = TradeApi()
     i = time.time()
     # for j in range(0, 5):
-    msg = trade_api.buy("600029", 7.85, 1)
+    msg = trade_api.buy("600029", 7.00, 1)
     print(msg)
     # time.sleep(0.5)
     # print(win32gui.GetWindowText(0x001612AC))

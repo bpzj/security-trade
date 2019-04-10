@@ -166,7 +166,7 @@ class BuyPanel:
                     txt = win32gui.GetWindowText(prompt_son)
                     if txt == "":
                         txt = get_item_text(prompt_son)
-                    if txt and "[" in txt and "]" in txt:
+                    if txt and (("[" in txt and "]" in txt) or "成功" in txt):
                         prompt_info.update(info=str(txt).replace("\r\n", ""))
                     elif txt == "确定" or txt == "终止":
                         prompt_info.update(confirm_btn=prompt_son)
