@@ -3,7 +3,7 @@ import win32api
 import win32con
 import win32gui
 
-from win32gui_util import get_item_text
+from win32_util import get_item_text
 
 
 class BuyPanel:
@@ -117,8 +117,19 @@ class BuyPanel:
         # time.sleep(0.04)
 
     def __get_order_msg(self):
-        # time.sleep(0.005)
+        # 判断窗口是不是提示窗口，是，就返回true
+        def win_is_msg(hand):
+            text = ""
+            sons = []
+            win32gui.EnumChildWindows(hand, lambda handle, param: param.append(handle), sons)
+            for son in sons:
+                if win32gui.GetClassName(son) in ["Static", "Button"]:
+                    t = get_item_text(son)
+                    if t:
+                        text = text + t
+            return "提示" in text and ("确定" in text or "终止" in text) and ("成功" in text or "失败" in text)
 
+        #
         # 根据 弹出窗口大小判断更快，所以按大小判断
         def call_back(handle, dialog_l):
             _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
@@ -126,7 +137,12 @@ class BuyPanel:
             # print(win32gui.GetParent(handle))
             if win32gui.GetClassName(handle) == "#32770" and \
                     win32gui.GetWindow(handle, win32con.GW_OWNER) == self.__parent_trade:
-                if (_right - _left == 362) and (_bottom - _top == 204):
+                # print(handle)
+                # if (_right - _left == 362) or (_right - _left == 341):
+                #     print(handle)
+                #     dialog_l.append(handle)
+                if win_is_msg(handle):
+                    print(handle)
                     dialog_l.append(handle)
 
         """ 下单 时不论成功失败，肯定在最后有一个 提示 弹框 """

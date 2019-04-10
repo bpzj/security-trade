@@ -3,7 +3,7 @@ import win32api
 import win32con
 import win32gui
 
-from win32gui_util import get_item_text
+from win32_util import get_item_text
 
 
 class SellPanel:

@@ -3,8 +3,9 @@ from multiprocessing import Process
 import win32con
 import win32gui
 import time
-from buy import BuyPanel
-from sell import SellPanel
+from trade.buy import BuyPanel
+from trade.hold import HoldPanel
+from trade.sell import SellPanel
 
 
 class TradeApi:
@@ -14,6 +15,7 @@ class TradeApi:
             self.__set_trade_hwnd()
         self.buy_panel = BuyPanel(self.trade_hwnd)
         self.sell_panel = SellPanel(self.trade_hwnd)
+        self.hold_panel = HoldPanel(self.trade_hwnd)
 
     def __set_trade_hwnd(self):
         hwnd_list = []
@@ -39,7 +41,7 @@ class TradeApi:
         pass
 
     def get_hold(self):
-        # todo
+        self.hold_panel.get_hold()
         pass
 
 
@@ -140,10 +142,11 @@ if __name__ == '__main__':
     # for j in range(0, 5):
     msg = trade_api.buy("600029", 7.85, 1)
     print(msg)
-    time.sleep(0.5)
+    # time.sleep(0.5)
     # print(win32gui.GetWindowText(0x001612AC))
     # print(win32gui.GetClassName(0x001612AC))
-    msg = trade_api.sell("600029", 7.85, 1)
-    print(msg)
+    # msg = trade_api.sell("600029", 7.85, 1)
+    # print(msg)
+    # trade_api.get_hold()
 
     print(time.time() - i)
