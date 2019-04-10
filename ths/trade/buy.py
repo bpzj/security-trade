@@ -137,12 +137,10 @@ class BuyPanel:
             # print(win32gui.GetParent(handle))
             if win32gui.GetClassName(handle) == "#32770" and \
                     win32gui.GetWindow(handle, win32con.GW_OWNER) == self.__parent_trade:
-                # print(handle)
                 # if (_right - _left == 362) or (_right - _left == 341):
                 #     print(handle)
                 #     dialog_l.append(handle)
                 if win_is_msg(handle):
-                    print(handle)
                     dialog_l.append(handle)
 
         # todo
@@ -151,32 +149,25 @@ class BuyPanel:
             dialog_list = []
             win32gui.EnumWindows(call_back, dialog_list)
             # 获得 每个 dialog 句柄的子句柄，判断出是 提示 弹出窗
-            prompt_list = []
-            for dialog in dialog_list:
-                li = []
-                win32gui.EnumChildWindows(dialog, lambda handle, param: param.append(handle), li)
-                for l in li:
-                    txt = win32gui.GetWindowText(l)
-                    if txt == "提示":
-                        prompt_list.append(dialog)
 
-            if len(prompt_list) > 1:
+            if len(dialog_list) > 1:
                 exit(-1)
             # 如果没有提示信息窗口，而存在委托窗口，判断无误下单后 退出
-            if len(prompt_list) == 0:
+            if len(dialog_list) == 0:
                 time.sleep(0.01)
                 continue
 
-            if len(prompt_list) == 1:
-                prompt = prompt_list[0]
+            if len(dialog_list) == 1:
+                prompt = dialog_list[0]
                 prompt_info = {}
                 prompt_sons = []
                 win32gui.EnumChildWindows(prompt, lambda handle, param: param.append(handle), prompt_sons)
                 for prompt_son in prompt_sons:
                     txt = win32gui.GetWindowText(prompt_son)
-                    left, top, right, bottom = win32gui.GetWindowRect(prompt_son)
-                    if right - left == 332 and bottom - top == 129:
-                        prompt_info.update(info=get_item_text(prompt_son))
+                    if txt == "":
+                        txt = get_item_text(prompt_son)
+                    if txt and "[" in txt and "]" in txt:
+                        prompt_info.update(info=str(txt).replace("\r\n", ""))
                     elif txt == "确定" or txt == "终止":
                         prompt_info.update(confirm_btn=prompt_son)
 
