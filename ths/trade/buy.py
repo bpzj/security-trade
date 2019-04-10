@@ -145,6 +145,7 @@ class BuyPanel:
                     print(handle)
                     dialog_l.append(handle)
 
+        # todo
         """ 下单 时不论成功失败，肯定在最后有一个 提示 弹框 """
         while True:
             dialog_list = []
