@@ -99,17 +99,28 @@ class HoldPanel:
         # return self.__get_order_msg()
 
     def __get_hold(self):
+        # 将窗口调到前台，激活
+        win32gui.ShowWindow(self.__parent_trade, win32con.SW_SHOWNORMAL)
+        win32gui.SetForegroundWindow(self.__parent_trade)
         # 使用 windows 消息机制 登录
-        win32api.SendMessage(self.__parent_trade, win32con.WM_KEYDOWN, win32con.VK_CONTROL, 0)
-        time.sleep(0.001)
-        win32api.SendMessage(self.__parent_trade, win32con.WM_KEYDOWN, win32api.VkKeyScan('s'), 0)
-        time.sleep(0.001)
-        # win32api.SendMessage(self.__parent_trade, win32con.WM_KEYUP, win32api.VkKeyScan('s'), 0)
-        # time.sleep(0.001)
-        # win32api.SendMessage(self.__parent_trade, win32con.WM_KEYUP, win32con.VK_CONTROL, 0)
-        time.sleep(0.001)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
+        win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
+        time.sleep(0.1)
+        hwnd = win32gui.FindWindow("#32770", "Save As")
+        win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
+        win32gui.SetForegroundWindow(hwnd)
 
-        # time.sleep(0.04)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
+        time.sleep(0.05)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('s'), 0)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0)
+        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
+        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
+        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
     def __get_order_msg(self):
         # time.sleep(0.005)
@@ -164,4 +175,19 @@ class HoldPanel:
                 return prompt_info["info"]
                 # 如果发送 继续委托，还要继续循环
 
+
+if __name__ == '__main__':
+    hwnd = win32gui.FindWindow("#32770", "Save As")
+    win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
+    win32gui.SetForegroundWindow(hwnd)
+
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_MENU, 0x20380001)
+    # win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 0x20200001)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSCHAR, 0x76, 0x20200001)
+    time.sleep(0.05)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32api.VkKeyScan('s'), 0xE0200001)
+    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0380001)
+
+    pass
 
