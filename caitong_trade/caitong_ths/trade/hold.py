@@ -3,27 +3,27 @@ import win32api
 import win32con
 import win32gui
 
-from win32_util import get_item_text
+from caitong_trade import get_item_text
 
 
-class SellPanel:
+class HoldPanel:
     def __init__(self, trade_hwnd):
         self.__parent_trade = trade_hwnd
         self.__handle = None
         self.__hwnd_list = None
         self.__edit_set = {}
 
-    def __enter_sell_panel(self):
+    def __enter_hold_panel(self):
         """
-        向主句柄 发送 F2，调出 卖出股票 界面
+        向主句柄 发送 F4，调出 查询 - 资金股票 界面
         :return:
         """
-        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYDOWN, win32con.VK_F2, 0)
-        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYUP, win32con.VK_F2, 0)
+        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+        win32gui.PostMessage(self.__parent_trade, win32con.WM_KEYUP, win32con.VK_F4, 0)
 
     def __init_handle(self):
-        """ 获取 卖出界面的 handle 值， 卖出界面 的 子句柄
-        每点击几次 卖出和卖出界面的 句柄都会重建，所以先校验 当前的 handle是否有效
+        """ 获取 查询 - 资金股票 的 handle 值， 买入界面 的 子句柄
+        每点击几次 买入和卖出界面的 句柄都会重建，所以先校验 当前的 handle是否有效
         :return:
         """
         if self.__handle:
@@ -33,11 +33,11 @@ class SellPanel:
                 li = []
                 win32gui.EnumChildWindows(self.__handle, lambda handle, param: param.append(handle), li)
                 for l in li:
-                    if win32gui.GetWindowText(l) == "卖出股票":
+                    if win32gui.GetWindowText(l) == "买入股票":
                         return
 
-        # 如果无效，向下执行，要先 发送 F2 , 调出界面
-        self.__enter_sell_panel()
+        # 如果无效，向下执行，要先 发送 F4 , 调出界面
+        self.__enter_hold_panel()
 
         # 获取所有 dialog 子句柄
         def call_back(handle, hwnd_list):
@@ -46,20 +46,20 @@ class SellPanel:
         hwnd_l = []
         win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
         for hwnd in hwnd_l:
-            # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 卖出界面 或者 卖出界面
+            # 获得 每个 dialog 句柄的子句柄，根据子句柄的内容判断出 dialog 是在 买入界面 或者 卖出界面
             li = []
             win32gui.EnumChildWindows(hwnd, lambda handle, param: param.append(handle), li)
             for l in li:
-                if win32gui.GetWindowText(l) == "卖出股票":
+                if win32gui.GetWindowText(l) == "买入股票":
                     self.__handle = hwnd
                     self.__hwnd_list = li
                     break
-        # 更新 证券代码，卖出价格，卖出数量，卖出按钮 四个有用的句柄
+        # 更新 证券代码，买入价格，买入数量，买入按钮 四个有用的句柄
         self.__set_useful_handle()
 
     def __set_useful_handle(self):
         """
-        根据 卖出界面的 handle 获取 证券代码，卖出价格，卖出数量，卖出按钮 四个有用的句柄
+        根据 买入界面的 handle 获取 证券代码，买入价格，买入数量，买入按钮 四个有用的句柄
         :return:
         """
         static_set = {}
@@ -69,12 +69,12 @@ class SellPanel:
             cls = win32gui.GetClassName(hwnd)
             if text == "证券代码" and cls == "Static":
                 static_set.update(code=hwnd)
-            elif text == "卖出价格" and cls == "Static":
+            elif text == "买入价格" and cls == "Static":
                 static_set.update(price=hwnd)
-            elif text == "卖出数量" and cls == "Static":
+            elif text == "买入数量" and cls == "Static":
                 static_set.update(lot=hwnd)
-            elif text == "卖出[S]" and cls == "Button":
-                self.__edit_set.update(sell_btn=hwnd)
+            elif text == "买入[B]" and cls == "Button":
+                self.__edit_set.update(buy_btn=hwnd)
             elif cls == "Edit":
                 edit_list.append(hwnd)
 
@@ -93,28 +93,34 @@ class SellPanel:
                 elif lot_txt_pos[1] < vertical < lot_txt_pos[3]:
                     self.__edit_set.update(lot=edit)
 
-    def sell(self, stock_code, price, lot):
-        self.__init_handle()
-        self.__send_msg(stock_code, price, lot)
-        return self.__get_order_msg()
+    def get_hold(self):
+        # self.__init_handle()
+        self.__get_hold()
+        # return self.__get_order_msg()
 
-    def __send_msg(self, stock_code, price, lot):
+    def __get_hold(self):
+        # 将窗口调到前台，激活
+        win32gui.ShowWindow(self.__parent_trade, win32con.SW_SHOWNORMAL)
+        win32gui.SetForegroundWindow(self.__parent_trade)
         # 使用 windows 消息机制 登录
-        win32gui.SendMessage(self.__edit_set["code"], win32con.WM_SETTEXT, None, stock_code)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
+        win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
+        time.sleep(0.1)
+        hwnd = win32gui.FindWindow("#32770", "Save As")
+        win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
+        win32gui.SetForegroundWindow(hwnd)
 
-        # WM_SETTEXT 不管用，使用 WM_CHAR 消息，先删除原来的内容
-        text = get_item_text(self.__edit_set["price"])
-        if text:
-            for i in range(0, len(text)):
-                win32api.PostMessage(self.__edit_set["price"], win32con.WM_CHAR, win32con.VK_BACK, 0)
-        content = str(price)
-        for char in list(content):
-            win32api.PostMessage(self.__edit_set["price"], win32con.WM_CHAR, ord(char), 0)
-        win32api.SendMessage(self.__edit_set["lot"], win32con.WM_SETTEXT, None, str(lot * 100))
-
-        win32api.PostMessage(self.__edit_set["sell_btn"], win32con.WM_LBUTTONDOWN, None, None)
-        win32api.PostMessage(self.__edit_set["sell_btn"], win32con.WM_LBUTTONUP, None, None)
-        # time.sleep(0.04)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
+        time.sleep(0.05)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('s'), 0)
+        win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0)
+        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
+        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
+        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
     def __get_order_msg(self):
         # time.sleep(0.005)
@@ -168,4 +174,20 @@ class SellPanel:
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
                 return prompt_info["info"]
                 # 如果发送 继续委托，还要继续循环
+
+
+if __name__ == '__main__':
+    hwnd = win32gui.FindWindow("#32770", "Save As")
+    win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
+    win32gui.SetForegroundWindow(hwnd)
+
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_MENU, 0x20380001)
+    # win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 0x20200001)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSCHAR, 0x76, 0x20200001)
+    time.sleep(0.05)
+    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32api.VkKeyScan('s'), 0xE0200001)
+    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0380001)
+
+    pass
 
