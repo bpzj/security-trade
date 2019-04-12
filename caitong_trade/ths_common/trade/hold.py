@@ -1,6 +1,7 @@
 import win32api
 import win32con
 import win32gui
+import pandas as pd
 
 
 class HoldPanel:
@@ -72,6 +73,7 @@ class HoldPanel:
         #  https://blog.csdn.net/SysProgram/article/details/45171493
         # win32gui.SendMessage(0x00020928, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0x001E0001)
         # win32gui.PostMessage(0x00020928, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0xC01E0001)
+        pd.read_clipboard(converters={'证券代码': str})
 
 
 if __name__ == '__main__':
