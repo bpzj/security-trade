@@ -2,8 +2,9 @@ import time
 import win32api
 import win32con
 import win32gui
-
-from caitong_trade import get_item_text
+import sys
+sys.path.append("..")
+from win32_util import get_item_text
 
 
 class SellPanel:
