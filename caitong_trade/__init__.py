@@ -3,5 +3,5 @@
     aip public
 """
 
-from caitong_ths.login import login
-from caitong_ths.caitong import TradeApi
+from ths_common.login import login
+from ths_common.caitong import TradeApi
