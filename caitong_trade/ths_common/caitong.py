@@ -16,6 +16,7 @@ class TradeApi:
         self.buy_panel = BuyPanel(self.trade_hwnd)
         self.sell_panel = SellPanel(self.trade_hwnd)
         self.hold_panel = HoldPanel(self.trade_hwnd)
+        self.account = Account()
 
     def __set_trade_hwnd(self):
         hwnd_list = []
@@ -134,6 +135,25 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                 win32api.PostMessage(notice_info["no_btn"], win32con.WM_LBUTTONUP, None, None)
                 return
             # 如果发送 继续委托，还要继续循环
+
+
+class Account:
+    def __init__(self, user_id=None, init_cash=100000000):
+        self.user_id = user_id
+        # 初始资金 account一样的资产类
+        self.init_cash = init_cash
+        # 资金余额，含不可取资金，冻结资金
+        self.left_cash = None
+        # 可用资金，可用于购买股票的资金
+        self.available_cash = None
+        # 佣金费率
+        self.commission_coeff = 0.00012
+        self.tax_coeff = 0.0001
+        # 历史成交记录
+        self.trade_history = []
+        self.cash_history = []
+
+        self.running_environment = 'real'
 
 
 if __name__ == '__main__':

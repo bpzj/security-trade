@@ -22,7 +22,7 @@ def open_login_windows(exe_path=None):
         else:
             default_path = "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe"
             win32api.WinExec(exe_path or default_path, win32con.SW_SHOWNORMAL)
-            time.sleep(6)
+            time.sleep(4)
 
 
 def __call_back(hwnd, extra):
@@ -100,7 +100,7 @@ def login(username=None, password=None, config=None):
     win32gui.SendMessage(handles["password_hwnd"], win32con.WM_SETTEXT, None, password)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)
-    time.sleep(6)
+    time.sleep(5)
 
 
 if __name__ == '__main__':
