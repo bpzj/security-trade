@@ -3,9 +3,7 @@ import os
 import time
 import win32api
 import win32gui
-
 import win32con
-from ocr_util import ocr_string_from_hwnd
 
 
 def find_login_win():
