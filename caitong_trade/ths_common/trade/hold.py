@@ -73,8 +73,9 @@ class HoldPanel:
         #  https://blog.csdn.net/SysProgram/article/details/45171493
         # win32gui.SendMessage(0x00020928, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0x001E0001)
         # win32gui.PostMessage(0x00020928, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0xC01E0001)
-        pd.read_clipboard(converters={'证券代码': str})
-
+        df = pd.read_clipboard(converters={'证券代码': str}).drop(columns=['资讯', 'Unnamed: 15'])
+        # 返回持仓数量大于 0 的股票
+        return df[df["股票余额"] > 0]
 
 if __name__ == '__main__':
     pass

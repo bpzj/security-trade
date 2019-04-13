@@ -42,8 +42,7 @@ class TradeApi:
         pass
 
     def get_hold(self):
-        self.hold_panel.get_hold()
-        pass
+        return self.hold_panel.get_hold()
 
 
 def handle_notice(trade_hwnd, stock_code, price, lot):
@@ -167,6 +166,6 @@ if __name__ == '__main__':
     # print(win32gui.GetClassName(0x001612AC))
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
-    trade_api.get_hold()
+    print(trade_api.get_hold())
 
     print(time.time() - i)
