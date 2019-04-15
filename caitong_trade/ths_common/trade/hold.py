@@ -77,6 +77,7 @@ class HoldPanel:
         # 返回持仓数量大于 0 的股票
         return df[df["股票余额"] > 0]
 
+
 if __name__ == '__main__':
     pass
 
