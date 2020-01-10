@@ -42,6 +42,7 @@ class HoldPanel:
             if txt and txt == "资金余额":
                 hwnd_list.append(win32gui.GetParent(handle))
                 return
+
         hwnd_l = []
         win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
         self.__handle = hwnd_l[0]
@@ -59,7 +60,7 @@ class HoldPanel:
         win32gui.EnumChildWindows(self.__handle, lambda handle, param: param.append(handle), li)
         for i in range(0, len(li)):
             if win32gui.GetWindowText(li[i]) == "可用金额":
-                self.available_cash = float(win32gui.GetWindowText(li[i+3]))
+                self.available_cash = float(win32gui.GetWindowText(li[i + 3]))
             elif win32gui.GetClassName(li[i]) == "CVirtualGridCtrl":
                 self.__data_grid_hwnd = li[i]
 
@@ -80,4 +81,3 @@ class HoldPanel:
 
 if __name__ == '__main__':
     pass
-
