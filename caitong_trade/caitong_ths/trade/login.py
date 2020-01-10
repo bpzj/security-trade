@@ -3,10 +3,10 @@ import os
 import time
 import win32api
 import win32gui
-
 import win32con
-from caitong_trade import ocr_string_from_hwnd
-
+import sys
+sys.path.append("..")   # 把上级目录加入到变量中
+from util.ocr_util import ocr_string_from_hwnd
 
 def open_login_windows(exe_path=None):
     login_hwnd = win32gui.FindWindow("#32770", "用户登录")
