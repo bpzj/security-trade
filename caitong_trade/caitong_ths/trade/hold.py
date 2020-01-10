@@ -116,7 +116,8 @@ class HoldPanel:
         self.__init_handle()
         # ctrl c
         win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
-        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
+        win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
+        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
         win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
         # win32gui.ShowWindow(self.__parent_trade, win32con.SW_SHOWNORMAL)
