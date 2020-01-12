@@ -84,7 +84,18 @@ def get_useful_handle(login_hwnd):
     return handles
 
 
+def is_login() -> bool:
+    hwnd_list = []
+    win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
+    for hwnd in hwnd_list:
+        if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:400000" in win32gui.GetClassName(hwnd):
+            return True
+    return False
+
+
 def login(username=None, password=None, config=None):
+    if is_login():
+        return
     if config is None:
         conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.json")
         with open(conf_path) as f:
