@@ -4,7 +4,7 @@ import win32con
 import win32gui
 import sys
 sys.path.append("..")
-from util.win32_util import get_item_text
+from util import get_item_text
 
 
 class SellPanel:

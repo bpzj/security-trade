@@ -5,8 +5,10 @@ import win32api
 import win32gui
 import win32con
 import sys
-sys.path.append("..")   # 把上级目录加入到变量中
+
+sys.path.append("..")  # 把上级目录加入到变量中
 from util.ocr_util import ocr_string_from_hwnd
+
 
 def open_login_windows(exe_path=None):
     login_hwnd = win32gui.FindWindow("#32770", "用户登录")
@@ -27,24 +29,24 @@ def __call_back(hwnd, extra):
 def __get_useful_position(login_hwnd):
     pos_dic = {}
     left, top, right, bottom = win32gui.GetWindowRect(login_hwnd)
-    horizontal_1 = left + (right - left)*0.7
-    vertical_1 = top + (bottom-top)*0.41
-    space_1 = (bottom-top)*0.1166
+    horizontal = right - left
+    vertical = bottom - top
+    space_1 = (bottom - top) * 0.1166
     # 输入账号框的位置中心
-    pos_dic.update(username_pos=(horizontal_1, vertical_1))
+    pos_dic.update(username_pos=(left + horizontal * 0.7256, top + vertical * 0.3782))
     # 输入交易密码的位置中心
-    pos_dic.update(password_pos=(horizontal_1, vertical_1 + space_1))
+    pos_dic.update(password_pos=(left + horizontal * 0.7256, top + vertical * 0.5065))
     # 输入验证码的位置中心
-    pos_dic.update(identify_pos=(horizontal_1, vertical_1 + space_1*2))
+    pos_dic.update(identify_pos=(left + horizontal * 0.6826, top + vertical * 0.6293))
     # 验证码图片 的位置中心
-    horizontal_2 = left + (right - left)*0.8973
-    pos_dic.update(identify_img=(horizontal_2, vertical_1 + space_1 * 2))
+    horizontal_2 = left + (right - left) * 0.8973
+    pos_dic.update(identify_img=(left + horizontal * 0.7722, top + vertical * 0.6293))
 
     # 选择登录模式的位置中心
-    pos_dic.update(mode_pos=(horizontal_1, vertical_1 + space_1*3))
+    # pos_dic.update(mode_pos=(horizontal_1, vertical_1 + space_1 * 3))
     # 登录按钮 的位置中心
-    space_2 = (bottom-top)*0.9028
-    pos_dic.update(login_btn_pos=(horizontal_1, top + space_2))
+    space_2 = (bottom - top) * 0.9028
+    pos_dic.update(login_btn_pos=(left + horizontal * 0.7722, top + vertical * 0.7802))
 
     return pos_dic
 
@@ -70,9 +72,9 @@ def get_useful_handle(login_hwnd):
                 handles.update(password_hwnd=child)
             elif pos_in_window_rect(pos_dic["identify_pos"], window_rect):
                 handles.update(identify_hwnd=child)
-        elif win32gui.GetClassName(child) == "ComboBox":
-            if pos_in_window_rect(pos_dic["mode_pos"], window_rect):
-                handles.update(mode_hwnd=child)
+        # elif win32gui.GetClassName(child) == "ComboBox":
+        #     if pos_in_window_rect(pos_dic["mode_pos"], window_rect):
+        #         handles.update(mode_hwnd=child)
         elif win32gui.GetClassName(child) == "Static":
             if pos_in_window_rect(pos_dic["identify_img"], window_rect):
                 handles.update(identify_img_hwnd=child)
@@ -84,7 +86,7 @@ def get_useful_handle(login_hwnd):
 
 def login(username=None, password=None, config=None):
     if config is None:
-        conf_path = os.path.join(os.path.dirname(__file__), "config.json")
+        conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.json")
         with open(conf_path) as f:
             config = json.load(f)
     account = config["account"]
@@ -116,4 +118,3 @@ def login(username=None, password=None, config=None):
 
 if __name__ == '__main__':
     login()
-
