@@ -3,9 +3,9 @@ from multiprocessing import Process
 import win32con
 import win32gui
 import time
-from trade.buy import BuyPanel
-from trade.sell import SellPanel
-from trade.hold import HoldPanel
+from buy import BuyPanel
+from caitong_ths import SellPanel
+from hold import HoldPanel
 
 
 class TradeApi:
