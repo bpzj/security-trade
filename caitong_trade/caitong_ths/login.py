@@ -97,7 +97,7 @@ def login(username=None, password=None, config=None):
     if is_login():
         return
     if config is None:
-        conf_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(__file__))), "config.json")
+        conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
         with open(conf_path) as f:
             config = json.load(f)
     account = config["account"]
