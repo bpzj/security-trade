@@ -60,3 +60,5 @@ def classify(dataset, labels, testData, k=1):
 dataset, labels = createDataset('trainingDigits')
 testData = img2vector('1_2.txt')
 print(classify(dataset, labels, testData))
+
+# https://www.cnblogs.com/bigmonkey/p/7368128.html
