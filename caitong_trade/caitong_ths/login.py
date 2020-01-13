@@ -4,10 +4,8 @@ import time
 import win32api
 import win32gui
 import win32con
-import sys
-
-sys.path.append("..")  # 把上级目录加入到变量中
-from util.ocr_util import ocr_string_from_hwnd
+from caitong_trade.util.ocr_util import ocr_string_from_hwnd
+from caitong_trade.util.win32_util import pos_in_window_rect
 
 
 def open_login_windows(exe_path=None):
@@ -49,13 +47,6 @@ def __get_useful_position(login_hwnd):
     pos_dic.update(login_btn_pos=(left + horizontal * 0.7722, top + vertical * 0.7802))
 
     return pos_dic
-
-
-def pos_in_window_rect(position, window_rect):
-    if window_rect[0] < position[0] < window_rect[2] and window_rect[1] < position[1] < window_rect[3]:
-        return True
-    else:
-        return False
 
 
 def get_useful_handle(login_hwnd):

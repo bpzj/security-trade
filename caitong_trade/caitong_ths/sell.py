@@ -5,7 +5,7 @@ import win32gui
 
 import sys
 sys.path.append("..")   # 把上级目录加入到变量中
-from util import get_item_text
+from caitong_trade.util.win32_util import get_item_text
 
 
 class SellPanel:
