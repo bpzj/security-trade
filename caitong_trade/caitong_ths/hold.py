@@ -118,7 +118,7 @@ class HoldPanel:
 
         self.__get_order_msg()
 
-        df = pd.read_clipboard(converters={'证券代码': str})
+        df = pd.read_clipboard(converters={'证券代码': str}).drop(columns=['Unnamed: 15', ])
         # 返回持仓数量大于 0 的股票
         return df[df["股票余额"] > 0]
 
