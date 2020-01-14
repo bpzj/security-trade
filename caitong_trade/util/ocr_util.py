@@ -6,11 +6,11 @@ from aip import AipOcr
 import json
 
 
-def cap_img(hwnd=None):
+def cap_img(hwnd=None, expand=0):
     # 获取句柄窗口的大小信息
     # 可以通过修改该位置实现自定义大小截图
     left, top, right, bot = win32gui.GetWindowRect(hwnd)
-    w = right - left
+    w = right - left + expand
     h = bot - top
 
     # 返回句柄窗口的设备环境、覆盖整个窗口，包括非客户区，标题栏，菜单，边框
@@ -46,8 +46,8 @@ def cap_img(hwnd=None):
     #                       bmpstr, 'raw', 'BGRX', 0, 1)
     # 存储截图
     # if result == 1:
-        # PrintWindow Succeeded
-        # im.save("test.png")
+    # PrintWindow Succeeded
+    # im.save("test.png")
 
     #
     # 内存释放
@@ -72,8 +72,8 @@ def img_to_str(image_path):
         return '\n'.join([w['words'] for w in result['words_result']])
 
 
-def ocr_string_from_hwnd(hwnd):
-    cap_img(hwnd)
+def ocr_string_from_hwnd(hwnd, expand=0):
+    cap_img(hwnd, expand)
     return img_to_str("screen.bmp")
 
 

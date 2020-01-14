@@ -114,10 +114,10 @@ class HoldPanel:
         # 将窗口调到前台，激活
         self.__init_handle()
         # ctrl c
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
-        # win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
-        # win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
+        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
         self.__get_order_msg()
 
@@ -206,7 +206,7 @@ class HoldPanel:
                         prompt_info.update(confirm_btn=prompt_son)
 
                 # 提示  弹出框, 使用ocr识别
-                identify_code = ocr_string_from_hwnd(prompt_info["image"])
+                identify_code = ocr_string_from_hwnd(prompt_info["image"], expand=20)
                 win32gui.SendMessage(prompt_info["input"], win32con.WM_SETTEXT, None, identify_code)
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
