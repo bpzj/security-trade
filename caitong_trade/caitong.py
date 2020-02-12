@@ -148,6 +148,7 @@ if __name__ == '__main__':
     # print(win32gui.GetClassName(0x001612AC))
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
-    print(trade_api.get_hold())
+    df = trade_api.get_hold()
+    print(df)
 
     print(time.time() - i)

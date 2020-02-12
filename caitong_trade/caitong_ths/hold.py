@@ -1,4 +1,6 @@
 import time
+
+import pandas as pd
 import win32api
 import win32con
 import win32gui
@@ -106,20 +108,19 @@ class HoldPanel:
                     self.__edit_set.update(lot=edit)
 
     def get_hold(self):
-        # self.__init_handle()
-        self.__get_hold()
-        # return self.__get_order_msg()
-
-    def __get_hold(self):
         # 将窗口调到前台，激活
         self.__init_handle()
         # ctrl c
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
-        # win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
-        # win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
+        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
+        win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
         self.__get_order_msg()
+
+        df = pd.read_clipboard(converters={'证券代码': str}).drop(columns=['Unnamed: 15', ])
+        # 返回持仓数量大于 0 的股票
+        return df[df["股票余额"] > 0]
 
         # win32gui.ShowWindow(self.__parent_trade, win32con.SW_SHOWNORMAL)
         # win32gui.SetForegroundWindow(self.__parent_trade)
@@ -206,10 +207,11 @@ class HoldPanel:
                         prompt_info.update(confirm_btn=prompt_son)
 
                 # 提示  弹出框, 使用ocr识别
-                identify_code = ocr_string_from_hwnd(prompt_info["image"])
+                identify_code = ocr_string_from_hwnd(prompt_info["image"], expand=10)
                 win32gui.SendMessage(prompt_info["input"], win32con.WM_SETTEXT, None, identify_code)
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
+                return
 
 
 if __name__ == '__main__':
