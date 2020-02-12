@@ -4,7 +4,7 @@ import win32con
 import win32gui
 import time
 from buy import BuyPanel
-from caitong_ths import SellPanel
+from ths_common.sell import SellPanel
 from hold import HoldPanel
 
 

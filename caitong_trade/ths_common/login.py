@@ -10,19 +10,20 @@ def find_login_win():
     hwnd_list = []
     win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
     for hwnd in hwnd_list:
+        left, top, right, bottom = win32gui.GetWindowRect(hwnd)
         if win32gui.GetClassName(hwnd) == "#32770" and win32gui.GetParent(hwnd) and \
-                win32gui.GetWindowText(win32gui.GetParent(hwnd)) == "网上股票交易系统5.0":
+                win32gui.GetWindowText(win32gui.GetParent(hwnd)) == "网上股票交易系统5.0" and bottom - top > 200:
             return hwnd
     return None
 
 
 def open_login_windows(exe_path=None):
-        if find_login_win():
-            return
-        else:
-            default_path = "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe"
-            win32api.WinExec(exe_path or default_path, win32con.SW_SHOWNORMAL)
-            time.sleep(4)
+    if find_login_win():
+        return
+    else:
+        default_path = "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe"
+        win32api.WinExec(exe_path or default_path, win32con.SW_SHOWNORMAL)
+        time.sleep(4)
 
 
 def __call_back(hwnd, extra):
@@ -34,10 +35,10 @@ def __call_back(hwnd, extra):
 def __get_useful_position(login_hwnd):
     pos_dic = {}
     left, top, right, bottom = win32gui.GetWindowRect(login_hwnd)
-    horizontal = left + (right - left)*0.78
-    vertical_1 = top + (bottom-top)*0.3511
-    vertical_2 = top + (bottom-top)*0.4382
-    vertical_3 = top + (bottom-top)*0.6292
+    horizontal = left + (right - left) * 0.78
+    vertical_1 = top + (bottom - top) * 0.3511
+    vertical_2 = top + (bottom - top) * 0.4382
+    vertical_3 = top + (bottom - top) * 0.6898
     # 输入账号框的位置中心
     pos_dic.update(username_pos=(horizontal, vertical_1))
     # 输入交易密码的位置中心
@@ -76,10 +77,10 @@ def get_useful_handle(login_hwnd):
 def login(username=None, password=None, config=None):
     if config is None:
         conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-        with open(conf_path,  encoding='UTF-8') as f:
+        with open(conf_path, encoding='UTF-8') as f:
             config = json.load(f)
     account = config["account"]
-    exe_path = config["exe_path"]
+    exe_path = config["ths_exe_path"]
 
     # 打开登录窗口
     open_login_windows(exe_path)
@@ -105,4 +106,3 @@ def login(username=None, password=None, config=None):
 
 if __name__ == '__main__':
     login()
-

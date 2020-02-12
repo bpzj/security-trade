@@ -3,8 +3,9 @@ import win32api
 import win32con
 import win32gui
 import sys
-sys.path.append("..")   # 把上级目录加入到变量中
-from util import get_item_text
+
+sys.path.append("..")  # 把上级目录加入到变量中
+from caitong_trade.util.win32_util import get_item_text
 
 
 class BuyPanel:
@@ -44,6 +45,7 @@ class BuyPanel:
         def call_back(handle, hwnd_list):
             if win32gui.GetClassName(handle) == "#32770":
                 hwnd_list.append(handle)
+
         hwnd_l = []
         win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
         for hwnd in hwnd_l:
@@ -177,4 +179,3 @@ class BuyPanel:
                 win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
                 return prompt_info["info"]
                 # 如果发送 继续委托，还要继续循环
-

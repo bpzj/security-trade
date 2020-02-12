@@ -4,6 +4,7 @@
     "password": ""
   },
   "exe_path": "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe",
+  "ths_exe_path":"D:\\Program Files (x86)\\ths-common-caitong\\xiadan.exe",
   "baidu-ocr-config":{
     "appId": "",
     "apiKey": "",
