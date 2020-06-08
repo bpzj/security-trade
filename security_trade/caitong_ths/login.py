@@ -4,8 +4,8 @@ import time
 import win32api
 import win32gui
 import win32con
-from caitong_trade.util.ocr_util import ocr_string_from_hwnd
-from caitong_trade.util.win32_util import pos_in_window_rect
+from security_trade.util.ocr_util import ocr_string_from_hwnd
+from security_trade.util.win32_util import pos_in_window_rect
 
 
 def open_login_windows(exe_path=None):

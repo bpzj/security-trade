@@ -4,9 +4,9 @@ import pandas as pd
 import win32api
 import win32con
 import win32gui
-from caitong_trade.util.win32_util import get_item_text
-from caitong_trade.util.ocr_util import ocr_string_from_hwnd
-from caitong_trade.util.win32_util import pos_in_window_rect
+from security_trade.util.win32_util import get_item_text
+from security_trade.util.ocr_util import ocr_string_from_hwnd
+from security_trade.util.win32_util import pos_in_window_rect
 
 
 class HoldPanel:

@@ -3,21 +3,21 @@ from multiprocessing import Process
 import win32con
 import win32gui
 import time
-from caitong_trade.caitong_ths.buy import BuyPanel
-from caitong_trade.caitong_ths.hold import HoldPanel
-from caitong_trade.caitong_ths.sell import SellPanel
+from security_trade.caitong_ths.buy import BuyPanel
+from security_trade.caitong_ths.hold import HoldPanel
+from security_trade.caitong_ths.sell import SellPanel
 
 
 class TradeApi:
     def __init__(self, trade_hwnd=None):
         self.trade_hwnd = trade_hwnd
         if trade_hwnd is None:
-            self.__find_trade_hwnd()
+            self.__set_trade_hwnd()
         self.buy_panel = BuyPanel(self.trade_hwnd)
         self.sell_panel = SellPanel(self.trade_hwnd)
         self.hold_panel = HoldPanel(self.trade_hwnd)
 
-    def __find_trade_hwnd(self):
+    def __set_trade_hwnd(self):
         hwnd_list = []
         win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
         for hwnd in hwnd_list:
@@ -102,7 +102,7 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                     confirm_info.update(no_btn=son)
 
             if stock_code in confirm_info["info"] and str(price) in confirm_info["info"] \
-                    and str(lot * 100) in confirm_info["info"]:
+                    and str(lot*100) in confirm_info["info"]:
                 win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONUP, None, None)
             else:
@@ -120,7 +120,7 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                 txt = win32gui.GetWindowText(son)
                 cls = win32gui.GetClassName(son)
                 left, top, right, bottom = win32gui.GetWindowRect(son)
-                if cls == "Static" and right - left == 300:
+                if cls == "Static" and right-left == 300:
                     notice_info.update(info=txt)
                 elif txt == "是(&Y)":
                     notice_info.update(yes_btn=son)
@@ -136,9 +136,8 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
 
 
 if __name__ == '__main__':
-    from haitong_ths.login import LoginWindow
-    loginWindow = LoginWindow()
-
+    from caitong_ths.login import login
+    login()
     trade_api = TradeApi()
     i = time.time()
     # for j in range(0, 5):

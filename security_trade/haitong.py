@@ -1,24 +1,28 @@
+import os
+
 import win32api
 from multiprocessing import Process
 import win32con
 import win32gui
 import time
-from buy import BuyPanel
-from ths_common.sell import SellPanel
-from hold import HoldPanel
+import sys
+
+sys.path.append("..")  # 把上级目录加入到变量中
+from security_trade.haitong_ths.buy import BuyPanel
+from security_trade.haitong_ths.hold import HoldPanel
+from security_trade.haitong_ths.sell import SellPanel
 
 
 class TradeApi:
     def __init__(self, trade_hwnd=None):
         self.trade_hwnd = trade_hwnd
         if trade_hwnd is None:
-            self.__set_trade_hwnd()
+            self.__find_trade_hwnd()
         self.buy_panel = BuyPanel(self.trade_hwnd)
         self.sell_panel = SellPanel(self.trade_hwnd)
         self.hold_panel = HoldPanel(self.trade_hwnd)
-        self.account = Account()
 
-    def __set_trade_hwnd(self):
+    def __find_trade_hwnd(self):
         hwnd_list = []
         win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
         for hwnd in hwnd_list:
@@ -103,7 +107,7 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                     confirm_info.update(no_btn=son)
 
             if stock_code in confirm_info["info"] and str(price) in confirm_info["info"] \
-                    and str(lot*100) in confirm_info["info"]:
+                    and str(lot * 100) in confirm_info["info"]:
                 win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONDOWN, None, None)
                 win32api.PostMessage(confirm_info["yes_btn"], win32con.WM_LBUTTONUP, None, None)
             else:
@@ -121,7 +125,7 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
                 txt = win32gui.GetWindowText(son)
                 cls = win32gui.GetClassName(son)
                 left, top, right, bottom = win32gui.GetWindowRect(son)
-                if cls == "Static" and right-left == 300:
+                if cls == "Static" and right - left == 300:
                     notice_info.update(info=txt)
                 elif txt == "是(&Y)":
                     notice_info.update(yes_btn=son)
@@ -136,26 +140,13 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
             # 如果发送 继续委托，还要继续循环
 
 
-class Account:
-    def __init__(self, user_id=None, init_cash=100000000):
-        self.user_id = user_id
-        # 初始资金 account一样的资产类
-        self.init_cash = init_cash
-        # 资金余额，含不可取资金，冻结资金
-        self.left_cash = None
-        # 可用资金，可用于购买股票的资金
-        self.available_cash = None
-        # 佣金费率
-        self.commission_coeff = 0.00012
-        self.tax_coeff = 0.0001
-        # 历史成交记录
-        self.trade_history = []
-        self.cash_history = []
-
-        self.running_environment = 'real'
-
-
 if __name__ == '__main__':
+    from haitong_ths.login import LoginWindow
+
+    conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "security_trade\\ht_config.json")
+    loginWindow = LoginWindow(json_file=conf_path)
+    loginWindow.login()
+
     trade_api = TradeApi()
     i = time.time()
     # for j in range(0, 5):
@@ -166,6 +157,7 @@ if __name__ == '__main__':
     # print(win32gui.GetClassName(0x001612AC))
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
-    print(trade_api.get_hold())
+    df = trade_api.get_hold()
+    print(df)
 
     print(time.time() - i)

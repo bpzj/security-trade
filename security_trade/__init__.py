@@ -4,7 +4,7 @@
 """
 
 # from ths_common.login import login
-# from ths_common.caitong import TradeApi
+from haitong import TradeApi
 
 
 

@@ -2,7 +2,7 @@ import time
 import win32api
 import win32con
 import win32gui
-from caitong_trade.util.win32_util import get_item_text
+from security_trade.util.win32_util import get_item_text
 
 
 class BuyPanel:
