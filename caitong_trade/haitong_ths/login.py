@@ -104,10 +104,6 @@ class LoginWindow:
             time.sleep(6)
 
 
-class LoginHwndSet:
-    username_hwnd = -1
-
-
 if __name__ == '__main__':
     conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ht_config.json")
     login = LoginWindow(json_file=conf_path)
