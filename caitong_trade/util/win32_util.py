@@ -18,10 +18,10 @@ class GuiPosition:
     # 父控件
     # ┏━━━━━━━━━━━━━━━━━━┯━━━━━━━━━━━━━━━━━
     # ┃               y_space
-    # ┃           ┏━━━━━━┷━━━━━━━┱────┬
-    # ┠─ x_space ─┨              ┃   y_height
-    # ┃           ┠── x_length ──┨    │
-    # ┃           ┗━━━━━━━━━━━━━━┹────┴
+    # ┃           ┏━━━━━━┷━━━━━━━┱┄┄┄┄┄┬┄
+    # ┠┄ x_space ┄┨              ┃   y_height
+    # ┃           ┠┄┄ x_length ┄┄┨     ┆
+    # ┃           ┗━━━━━━━━━━━━━━┹┄┄┄┄┄┴┄
     # ┃             子控件
 
     def __init__(self, gui_type: HwndType, x_space: float, y_space: float, x_length: float, y_height: float):
