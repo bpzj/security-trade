@@ -47,6 +47,7 @@ class LoginWindow:
             self.__comm_password = comm_password
         self.__login_hwnd = -1
         # 账号输入框, 交易密码输入框, 通讯密码输入框, 登录按钮 的位置中心
+        #
         self.__pos_username_input = GuiPosition(HwndType.Edit, 99, 113, 114, 14)
         self.__pos_password_input = GuiPosition(HwndType.Edit, 96, 134, 117, 20)
         self.__pos_comm_password_input = GuiPosition(HwndType.Edit, 96, 158, 137, 18)
