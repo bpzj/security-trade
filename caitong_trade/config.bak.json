@@ -3,10 +3,5 @@
     "username": "",
     "password": ""
   },
-  "exe_path": "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe",
-  "baidu-ocr-config":{
-    "appId": "",
-    "apiKey": "",
-    "secretKey": ""
-  }
+  "exe_path": "D:\\Program Files (x86)\\CaiTongZhengQuan\\xiadan.exe"
 }

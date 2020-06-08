@@ -1,2 +1,2 @@
-baidu-aip==2.2.13.0
+win32gui
 pywin32==224
