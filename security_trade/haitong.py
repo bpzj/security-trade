@@ -28,7 +28,7 @@ class TradeApi:
         for hwnd in hwnd_list:
             if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:400000" in win32gui.GetClassName(hwnd):
                 self.trade_hwnd = hwnd
-                return
+                # return
         print("未找到交易页面")
 
     def buy(self, stock_code, price, lot):

@@ -45,15 +45,24 @@ class HoldPanel:
                         return
 
         # 获取所有 dialog 子句柄
-        def call_back(handle, hwnd_list):
-            txt = win32gui.GetWindowText(handle)
-            if txt and txt == "资金余额":
-                hwnd_list.append(win32gui.GetParent(handle))
-                return
+        def call_back(handle, hwnd_li):
+            if win32gui.GetClassName(handle) == 'AfxMDIFrame42s':
+                win32gui.EnumChildWindows(handle, lambda handle, param: param.append(handle), hwnd_li)
 
-        hwnd_l = []
-        win32gui.EnumChildWindows(self.__parent_trade, call_back, hwnd_l)
-        self.__handle = hwnd_l[0]
+        # txt = win32gui.GetWindowText(handle)
+        # if txt and txt == "资金余额":
+        #     hwnd_list.append(win32gui.GetParent(handle))
+        #     return
+
+        li = []
+        win32gui.EnumChildWindows(self.__parent_trade, call_back, li)
+        left, top, right, bottom = win32gui.GetWindowRect(self.__parent_trade)
+
+        for item in li:
+            left1, top1, right1, bottom1 = win32gui.GetWindowRect(item)
+            if win32gui.GetClassName(item)=="#32770" and top1 - top == 75 and right - right1 == 5 and bottom -bottom1 == 24:
+                self.__handle = item
+        # self.__handle = hwnd_l[0]
 
         # 调用
         self.__set_useful_handle()
@@ -156,16 +165,5 @@ def win_is_verify_code(hand):
 
 
 if __name__ == '__main__':
-    hwnd = win32gui.FindWindow("#32770", "Save As")
-    win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
-    win32gui.SetForegroundWindow(hwnd)
+    print('h')
 
-    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32con.VK_MENU, 0x20380001)
-    # win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
-    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYDOWN, win32api.VkKeyScan('s'), 0x20200001)
-    win32gui.PostMessage(hwnd, win32con.WM_SYSCHAR, 0x76, 0x20200001)
-    time.sleep(0.05)
-    win32gui.PostMessage(hwnd, win32con.WM_SYSKEYUP, win32api.VkKeyScan('s'), 0xE0200001)
-    win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0xC0380001)
-
-    pass
