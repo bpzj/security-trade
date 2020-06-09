@@ -18,9 +18,8 @@ class TradeApi:
         self.trade_hwnd = trade_hwnd
         if trade_hwnd is None:
             self.__find_trade_hwnd()
-        self.buy_panel = BuyPanel(self.trade_hwnd)
-        self.sell_panel = SellPanel(self.trade_hwnd)
-        self.hold_panel = HoldPanel(self.trade_hwnd)
+        self.AfxMDIFrame_hwnd = self.__find_AfxMDIFrame_hwnd()
+        self.__init_handle()
 
     def __find_trade_hwnd(self):
         hwnd_list = []
@@ -30,6 +29,29 @@ class TradeApi:
                 self.trade_hwnd = hwnd
                 return
         print("未找到交易页面")
+
+    def __find_AfxMDIFrame_hwnd(self):
+        li = []
+        win32gui.EnumChildWindows(self.trade_hwnd, lambda handle, param: param.append(handle), li)
+        for l in li:
+            if win32gui.GetClassName(l) == 'AfxMDIFrame42s':
+                return l
+
+    def __init_handle(self):
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYDOWN, win32con.VK_F1, 0)
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYUP, win32con.VK_F1, 0)
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYDOWN, win32con.VK_F2, 0)
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYUP, win32con.VK_F2, 0)
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+        win32gui.PostMessage(self.AfxMDIFrame_hwnd, win32con.WM_KEYUP, win32con.VK_F4, 0)
+
+        li = []
+        win32gui.EnumChildWindows(self.AfxMDIFrame_hwnd, lambda handle, param: param.append(handle) if win32gui.GetClassName(handle) == '#32770' else None, li)
+        for i in li:
+            text_whole = []
+            win32gui.EnumChildWindows(i, lambda handle, param: param.append(win32gui.GetWindowText(handle)) if win32gui.GetWindowText(handle) else None, text_whole)
+            if '查询资金股票' in text_whole and '资金余额' in text_whole and '可用金额' in text_whole:
+                self.hold_panel = HoldPanel(i, self.AfxMDIFrame_hwnd)
 
     def buy(self, stock_code, price, lot):
         confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
@@ -157,7 +179,7 @@ if __name__ == '__main__':
     # print(win32gui.GetClassName(0x001612AC))
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
-    df = trade_api.get_hold()
-    print(df)
+    # df = trade_api.get_hold()
+    # print(df)
 
     print(time.time() - i)

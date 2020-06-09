@@ -11,62 +11,33 @@ from security_trade.util.win32_util import pos_in_window_rect
 
 
 class HoldPanel:
-    def __init__(self, trade_hwnd):
-        self.__whole_trade_handle = trade_hwnd
-        self.__AfxMDIFrame_handle = self.__find_AfxMDIFrame_hwnd()
-        self.__handle = None
+    def __init__(self, hold_panel, AfxMDIFrame_hwnd):
+        self.__AfxMDIFrame_hwnd = AfxMDIFrame_hwnd
+        self.__hold_panel_hwnd = hold_panel
         self.__hwnd_list = None
         # self.__edit_set = {}
         self.__data_grid_hwnd = None
         self.available_cash = None
-
-    def __find_AfxMDIFrame_hwnd(self):
-        li = []
-        win32gui.EnumChildWindows(self.__whole_trade_handle, lambda handle, param: param.append(handle), li)
-        for l in li:
-            if win32gui.GetClassName(l) == 'AfxMDIFrame42s':
-                return l
+        self.__init_handle()
 
     def __enter_hold_panel(self):
-        """
-        向主句柄 发送 F4，调出 查询 - 资金股票 界面
-        :return:
-        """
-        win32gui.PostMessage(self.__whole_trade_handle, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
-        win32gui.PostMessage(self.__whole_trade_handle, win32con.WM_KEYUP, win32con.VK_F4, 0)
+        """  向主句柄 发送 F4，调出 查询 - 资金股票 界面   """
+        win32gui.PostMessage(self.__AfxMDIFrame_hwnd, win32con.WM_KEYDOWN, win32con.VK_F4, 0)
+        win32gui.PostMessage(self.__AfxMDIFrame_hwnd, win32con.WM_KEYUP, win32con.VK_F4, 0)
 
     def __init_handle(self):
         # 发送 F4 , 调出界面
         self.__enter_hold_panel()
-
         """ 获取 持仓界面的 handle 值
             每点击几次 句柄都会重建，所以先校验 保存的handle 是否有效, 如果有效, 直接使用 保存的handle
         """
-        if self.__handle:
-            son_of_hold = []
-            win32gui.EnumChildWindows(self.__whole_trade_handle, lambda handle, param: param.append(handle), son_of_hold)
-            if self.__handle in son_of_hold:
-                li = []
-                win32gui.EnumChildWindows(self.__handle, lambda handle, param: param.append(handle), li)
-                for l in li:
-                    if win32gui.GetWindowText(l) == "资金余额":
-                        return
+        if self.__hold_panel_hwnd:
+            son = []
+            win32gui.EnumChildWindows(self.__hold_panel_hwnd, lambda handle, param: param.append(win32gui.GetWindowText(handle)) if win32gui.GetWindowText(handle) else None, son)
+            if '查询资金股票' in son and '资金余额' in son and '可用金额' in son:
+                return
 
-        # 获取所有 dialog 子句柄
-        def call_back(handle, hwnd_li):
-            if win32gui.GetClassName(handle) == '#32770':
-                hwnd_li.append(handle)
-        li = []
-        win32gui.EnumChildWindows(self.__AfxMDIFrame_handle, call_back, li)
-        left, top, right, bottom = win32gui.GetWindowRect(self.__whole_trade_handle)
-        for i in li:
-            left1, top1, right1, bottom1 = win32gui.GetWindowRect(i)
-            if top1 - top == 75 and right - right1 == 5 and bottom - bottom1 == 24:
-                print("******************************************")
-                list2 = []
-                win32gui.EnumChildWindows(i, lambda handle, param: param.append(handle), list2)
-                for l2 in list2:
-                    print(win32gui.GetWindowText(l2))
+        # todo 如果重建了句柄，也就是上面的句柄失效了，重新根据 __AfxMDIFrame_hwnd 查找 句柄
 
         # self.__handle = hwnd_l[0]
         # txt = win32gui.GetWindowText(handle)
