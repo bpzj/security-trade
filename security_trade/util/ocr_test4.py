@@ -23,21 +23,42 @@ for j in range(img.height-1):
         else:
             print(1, end='')
     print('')
-
+pre_is_split = False
+pre_split_x_value = []
+num_length_total = 0
+one_split_group = []
 for i in range(img.width-1):
-    sum = 0
+    total = 0
     for j in range(img.height-1):
         data = src_strlist[i, j]
-        sum = sum + data
+        total = total + data
         # if  data >= 150:
         #     print(0, end='')
         # else:
         #     print(1, end='')
-    if sum >= 255 * (img.height-1):
+    if total >= 255 * (img.height - 1):
         print("|",end='')
+        one_split_group.append(i)
+        pre_is_split = True
     else:
+        if pre_is_split:
+            pre_split_x_value.append(sum(one_split_group)/len(one_split_group))
+            one_split_group = []
+            pre_is_split = False
+        num_length_total = num_length_total +1
         print(" ",end='')
     # print(sum,end='')
+
+print("每个数字平均长度为", num_length_total/4)
+cursor = 0
+real_split_x_value = []
+for i in pre_split_x_value:
+    if  i - cursor > num_length_total /4:
+        real_split_x_value.append(int(i))
+        cursor = i
+
+print(real_split_x_value)
+
 
 # 自定义灰度界限，大于这个值为黑色，小于这个值为白色
 threshold = 160
