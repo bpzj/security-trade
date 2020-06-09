@@ -53,12 +53,12 @@ def get_split_position(image: Image, content_num=4) -> list:
         #  分割中心位置 - 上一个分割中心位置 > 每个数字占据的平均长度
         if split_pos - cursor > content_length_total / content_num:
             real_split_x_value.append(int(split_pos))
-            cursor = i
+            cursor = split_pos
 
     return real_split_x_value
 
 
-print()
+print(get_split_position(img))
 
 # 自定义灰度界限，大于这个值为黑色，小于这个值为白色
 threshold = 160
