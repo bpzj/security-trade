@@ -1,9 +1,11 @@
 import ctypes
 from enum import Enum
 
+import win32api
 import win32con
 import win32gui
 import pywintypes
+import win32print
 
 
 class HwndType(Enum):
@@ -23,7 +25,7 @@ class GuiPosition:
     # ┃           ┠┄┄ x_length ┄┄┨     ┆
     # ┃           ┗━━━━━━━━━━━━━━┹┄┄┄┄┄┴┄
     # ┃             子控件
-
+    # 这里是屏幕没有缩放时的大小
     def __init__(self, gui_type: HwndType, x_space: float, y_space: float, x_length: float, y_height: float):
         self.gui_type = gui_type
         self.x_space = x_space
@@ -60,3 +62,19 @@ def pos_in_window_rect(pos_scale: GuiPosition, parent_rect, fit_rect_hwnd):
     if win32gui.GetClassName(fit_rect_hwnd) == pos_scale.gui_type.value:
         return left_real == left and right_real == right and top == top_real and bottom == bottom_real
     return False
+
+def get_dpi():
+    hDC = win32gui.GetDC(0)
+    width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
+    print(width)
+    #横向分辨率
+    HORZRES = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
+    #纵向分辨率
+    VERTRES = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES)
+
+    return HORZRES/width
+
+scale = get_dpi()
+
+
+print(scale)
