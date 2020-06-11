@@ -86,7 +86,6 @@ def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
     # 1. 可以根据 验证码弹窗的 OWNER 句柄 = 父句柄 判断
     # 2. 可以根据 弹出窗口大小判断更快，所以按大小判断
     def call_back(handle, dialog_l):
-        _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
         if win32gui.GetClassName(handle) == "#32770" and \
                 win32gui.GetWindow(handle, win32con.GW_OWNER) == parent_trade_hwnd:
             if win_is_verify_code(handle):
