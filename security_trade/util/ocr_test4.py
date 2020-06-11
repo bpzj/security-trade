@@ -3,7 +3,7 @@ from PIL import Image
 
 # 模式 "L" 为灰度图像，每个像素用8个bit表示，0表示黑，255表示白，其他数字表示不同的灰度。
 # 模式 "1" 为二值图像，每个像素用 8bit表示，0表示黑，255表示白 (没有其他值)。
-img = Image.open('screen.bmp').convert(mode='L').resize((62 * 2, 23 * 2))
+img = Image.open('screen.bmp').convert(mode='1').resize((62, 23))
 
 img.save("test1.jpg")
 # 获得文字图片的每个像素点
@@ -58,7 +58,13 @@ def get_split_position(image: Image, content_num=4) -> list:
     return real_split_x_value
 
 
-print(get_split_position(img))
+cut_pos = get_split_position(img)
+print()
+
+img2 = img.crop((0,0,cut_pos[0],img.height))
+img2.save("lena2.jpg")
+from numpy import savetxt, asarray
+data = asarray(img2)
 
 # 自定义灰度界限，大于这个值为黑色，小于这个值为白色
 threshold = 160

@@ -57,13 +57,27 @@ def cap_img(hwnd=None, expand=0):
     win32gui.ReleaseDC(hwnd, hwndDC)
 
 
-def img_to_str(image_path):
-    conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-    with open(conf_path) as f:
-        config = json.load(f)
-    baidu_ocr = config["baidu-ocr-config"]
-    client = AipOcr(**baidu_ocr)
+class Singleton(object):
+    _instance = None
 
+    @staticmethod
+    def get_instance():
+        cls = __class__
+
+        if cls._instance is None:
+            cls._instance = super(cls, cls).__new__(cls)
+        return cls._instance
+
+
+conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
+with open(conf_path) as f:
+    config = json.load(f)
+baidu_ocr = config["baidu-ocr-config"]
+print('哈哈')
+client = AipOcr(**baidu_ocr)
+
+
+def img_to_str(image_path):
     with open(image_path, 'rb') as fp:
         image = fp.read()
     result = client.basicGeneral(image)
@@ -78,4 +92,4 @@ def ocr_string_from_hwnd(hwnd, expand=0):
 
 
 if __name__ == '__main__':
-    print(ocr_string_from_hwnd(0x20730))
+    print(ocr_string_from_hwnd(0x002008D6))

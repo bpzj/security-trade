@@ -8,6 +8,21 @@ import pywintypes
 import win32print
 
 
+def get_scale():
+    h_dc = win32gui.GetDC(0)
+    # 系统向显示器输出的分辨率
+    width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
+    # 显示器的分辨率
+    HORZRES = win32print.GetDeviceCaps(h_dc, win32con.DESKTOPHORZRES)
+    # 纵向分辨率
+    # VERTRES = win32print.GetDeviceCaps(h_dc, win32con.DESKTOPVERTRES)
+
+    return HORZRES / width
+
+
+scale = get_scale()
+
+
 class HwndType(Enum):
     #
     Edit = "Edit"
@@ -34,6 +49,18 @@ class GuiPosition:
         self.y_height = y_height
 
 
+def pos_in_window_rect(pos_scale: GuiPosition, parent_rect, fit_rect_hwnd):
+    left, top, right, bottom = win32gui.GetWindowRect(fit_rect_hwnd)
+    left_real = parent_rect[0] + pos_scale.x_space
+    right_real = left_real + pos_scale.x_length
+    top_real = parent_rect[1] + pos_scale.y_space
+    bottom_real = top_real + pos_scale.y_height
+
+    if win32gui.GetClassName(fit_rect_hwnd) == pos_scale.gui_type.value:
+        return left_real == left and right_real == right and top == top_real and bottom == bottom_real
+    return False
+
+
 def get_item_text(hwnd, max_len=4):
     while True:
         # 创建char[]
@@ -50,31 +77,3 @@ def get_item_text(hwnd, max_len=4):
         # 否则把缓冲区扩大一倍重试
         else:
             max_len *= 2
-
-
-def pos_in_window_rect(pos_scale: GuiPosition, parent_rect, fit_rect_hwnd):
-    left, top, right, bottom = win32gui.GetWindowRect(fit_rect_hwnd)
-    left_real = parent_rect[0] + pos_scale.x_space
-    right_real = left_real + pos_scale.x_length
-    top_real = parent_rect[1] + pos_scale.y_space
-    bottom_real = top_real + pos_scale.y_height
-
-    if win32gui.GetClassName(fit_rect_hwnd) == pos_scale.gui_type.value:
-        return left_real == left and right_real == right and top == top_real and bottom == bottom_real
-    return False
-
-def get_dpi():
-    hDC = win32gui.GetDC(0)
-    width = win32api.GetSystemMetrics(win32con.SM_CXSCREEN)
-    print(width)
-    #横向分辨率
-    HORZRES = win32print.GetDeviceCaps(hDC, win32con.DESKTOPHORZRES)
-    #纵向分辨率
-    VERTRES = win32print.GetDeviceCaps(hDC, win32con.DESKTOPVERTRES)
-
-    return HORZRES/width
-
-scale = get_dpi()
-
-
-print(scale)

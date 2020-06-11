@@ -82,16 +82,20 @@ class LoginWindow:
             # 找到各个句柄
             child_list = []
             win32gui.EnumChildWindows(self.__login_hwnd, lambda hwnd, param: param.append(hwnd), child_list)
-
-            for child in child_list:
-                if pos_in_window_rect(self.__pos_username_input, win32gui.GetWindowRect(self.__login_hwnd), child):
-                    username_hwnd = child
-                elif pos_in_window_rect(self.__pos_password_input, win32gui.GetWindowRect(self.__login_hwnd), child):
-                    password_hwnd = child
-                elif pos_in_window_rect(self.__pos_comm_pw_input, win32gui.GetWindowRect(self.__login_hwnd), child):
-                    comm_password_hwnd = child
-                elif pos_in_window_rect(self.__pos_login_button, win32gui.GetWindowRect(self.__login_hwnd), child):
-                    login_btn_hwnd = child
+            #  TODO 暂时根据在句柄列表中的 index 位置判定
+            username_hwnd = child_list[1]
+            password_hwnd = child_list[2]
+            comm_password_hwnd = child_list[4]
+            login_btn_hwnd = child_list[24]
+            # for child in child_list:
+            #     if pos_in_window_rect(self.__pos_username_input, win32gui.GetWindowRect(self.__login_hwnd), child):
+            #         username_hwnd = child
+            #     elif pos_in_window_rect(self.__pos_password_input, win32gui.GetWindowRect(self.__login_hwnd), child):
+            #         password_hwnd = child
+            #     elif pos_in_window_rect(self.__pos_comm_pw_input, win32gui.GetWindowRect(self.__login_hwnd), child):
+            #         comm_password_hwnd = child
+            #     elif pos_in_window_rect(self.__pos_login_button, win32gui.GetWindowRect(self.__login_hwnd), child):
+            #         login_btn_hwnd = child
 
             # 使用 windows 消息机制 登录
             win32gui.SendMessage(username_hwnd, win32con.WM_SETTEXT, None, self.__username)

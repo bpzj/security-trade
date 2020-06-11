@@ -17,7 +17,7 @@ def imgToArray():
             else:
                 print(1, end='')
         print('')
-    # data = asarray(image)
+    data = asarray(image)
     # # print(data)
     # savetxt("1_2.txt", data, fmt="%d", delimiter='')
 
