@@ -18,7 +18,8 @@ class HoldPanel:
         # self.__edit_set = {}
         self.__data_grid_hwnd = None
         self.available_cash = None
-        self.__init_handle()
+        self.__set_useful_handle()
+        # self.__init_handle()
 
     def __enter_hold_panel(self):
         """  向主句柄 发送 F4，调出 查询 - 资金股票 界面   """
@@ -55,7 +56,7 @@ class HoldPanel:
         """
         # 获得 根据子句柄
         li = []
-        win32gui.EnumChildWindows(self.__handle, lambda handle, param: param.append(handle), li)
+        win32gui.EnumChildWindows(self.__hold_panel_hwnd, lambda handle, param: param.append(handle), li)
         for i in range(0, len(li)):
             if win32gui.GetWindowText(li[i]) == "可用金额":
                 self.available_cash = float(win32gui.GetWindowText(li[i + 3]))
@@ -66,19 +67,28 @@ class HoldPanel:
         # 将窗口调到前台，激活
         self.__init_handle()
         # 另起进程处理输入验证码问题
-        confirm_pro = Process(target=handle_verify, args=(self.__whole_trade_handle, self.__handle, self.__data_grid_hwnd))
-        confirm_pro.start()
+        # confirm_pro = Process(target=handle_verify, args=(self.__AfxMDIFrame_hwnd, self.__hold_panel_hwnd, self.__data_grid_hwnd))
+        # confirm_pro.start()
         # ctrl c
         win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
         # 使用 PostMessage 导致客户端退出
-        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
-        win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
+        # win32con.HWND_BROADCAST, win32con.WM_SETTINGCHANGE, 0, 'Environment', win32con.SMTO_ABORTIFHUNG, 1000
+        # SMTO_ABORTIFHUNG：如果接收进程处于“hung”状态，不等待超时周期结束就返回。
+        # SMTO_BLOCK：阻止调用线程处理其他任何请求，直到函数返回。
+        # SMTO_NORMAL：调用线程等待函数返回时，不被阻止处理其他请求。
+        # SMTO_NOTIMEOUTIFNOTHUNG：Windows 95及更高版本：如果接收线程没被挂起，当超时周期结束时不返回。
+        try:
+            win32gui.SendMessageTimeout(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0, win32con.SMTO_NORMAL, 5)
+            win32gui.SendMessageTimeout(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0, win32con.SMTO_NORMAL, 5)
+        except Exception:
+            pass
         win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
-        df = pd.read_clipboard(converters={'证券代码': str}).drop(
-            columns=['冻结数量', '交易市场', '股东帐户', '汇率', '成本价港币', '成本价港币', '买入成本价港币', '买入在途数量', '卖出在途数量', 'Unnamed: 17', ])
+        # df = pd.read_clipboard(converters={'证券代码': str}).drop(
+        #     columns=['冻结数量', '交易市场', '股东帐户', '汇率', '成本价港币', '成本价港币', '买入成本价港币', '买入在途数量', '卖出在途数量', 'Unnamed: 17', ])
         # 返回持仓数量大于 0 的股票
-        return df[df["股票余额"] > 0]
+        # return df[df["股票余额"] > 0]
+        return pd.read_clipboard()
 
 
 def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):

@@ -20,8 +20,9 @@ class TradeApi:
             self.__find_trade_hwnd()
         self.AfxMDIFrame_hwnd = self.__find_AfxMDIFrame_hwnd()
         self.__init_handle()
-        confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
-        confirm_pro.start()
+        # todo
+        # confirm_pro = Process(target=handle_notice, args=(self.trade_hwnd, stock_code, price, lot))
+        # confirm_pro.start()
 
     def __find_trade_hwnd(self):
         hwnd_list = []
@@ -181,7 +182,7 @@ if __name__ == '__main__':
     # print(win32gui.GetClassName(0x001612AC))
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
-    # df = trade_api.get_hold()
-    # print(df)
+    df = trade_api.get_hold()
+    print(df)
 
     print(time.time() - i)
