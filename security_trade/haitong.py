@@ -183,6 +183,6 @@ if __name__ == '__main__':
     # msg = trade_api.sell("600029", 7.85, 1)
     # print(msg)
     df = trade_api.get_hold()
-    print(df)
+    # print(df)
 
     print(time.time() - i)

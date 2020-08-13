@@ -67,8 +67,8 @@ class HoldPanel:
         # 将窗口调到前台，激活
         self.__init_handle()
         # 另起进程处理输入验证码问题
-        # confirm_pro = Process(target=handle_verify, args=(self.__AfxMDIFrame_hwnd, self.__hold_panel_hwnd, self.__data_grid_hwnd))
-        # confirm_pro.start()
+        confirm_pro = Process(target=handle_verify, args=(self.__AfxMDIFrame_hwnd, self.__hold_panel_hwnd, self.__data_grid_hwnd))
+        confirm_pro.start()
         # ctrl c
         win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
         # 使用 PostMessage 导致客户端退出
@@ -80,7 +80,7 @@ class HoldPanel:
         try:
             win32gui.SendMessageTimeout(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0, win32con.SMTO_NORMAL, 5)
             win32gui.SendMessageTimeout(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0, win32con.SMTO_NORMAL, 5)
-        except Exception:
+        except Exception as e:
             pass
         win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
@@ -88,18 +88,14 @@ class HoldPanel:
         #     columns=['冻结数量', '交易市场', '股东帐户', '汇率', '成本价港币', '成本价港币', '买入成本价港币', '买入在途数量', '卖出在途数量', 'Unnamed: 17', ])
         # 返回持仓数量大于 0 的股票
         # return df[df["股票余额"] > 0]
-        return pd.read_clipboard()
+        # todo return pd.read_clipboard()
+        return ''
 
 
 def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
-    #
-    # 1. 可以根据 验证码弹窗的 OWNER 句柄 = 父句柄 判断
-    # 2. 可以根据 弹出窗口大小判断更快，所以按大小判断
+    # TODO 解决获取不到验证码对话框的 hwnd句柄的问题
     def call_back(handle, dialog_l):
-        if win32gui.GetClassName(handle) == "#32770" and \
-                win32gui.GetWindow(handle, win32con.GW_OWNER) == parent_trade_hwnd:
-            if win_is_verify_code(handle):
-                dialog_l.append(handle)
+        dialog_l.append(handle) if win_is_verify_code(handle,parent_trade_hwnd) else None
 
     # todo
     """ 下单 时不论成功失败，肯定在最后有一个 提示 弹框 """
@@ -142,7 +138,9 @@ def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
         # 判断窗口是不是提示窗口，是，就返回true
 
 
-def win_is_verify_code(hand):
+def win_is_verify_code(hand, parent_trade_hwnd) -> bool:
+    if win32gui.GetClassName(hand) != "#32770" or win32gui.GetWindow(hand, win32con.GW_OWNER) != parent_trade_hwnd:
+        return False
     text = ""
     sons = []
     win32gui.EnumChildWindows(hand, lambda handle, param: param.append(handle), sons)

@@ -73,7 +73,6 @@ conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.jso
 with open(conf_path) as f:
     config = json.load(f)
 baidu_ocr = config["baidu-ocr-config"]
-print('哈哈')
 client = AipOcr(**baidu_ocr)
 
 
