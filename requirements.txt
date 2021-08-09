@@ -1,2 +1,2 @@
 win32gui
-pywin32==224
+pywin32==301
