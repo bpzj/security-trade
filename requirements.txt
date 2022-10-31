@@ -1,2 +1,3 @@
-win32gui
-pywin32==301
+# win32gui
+pywin32
+pandas

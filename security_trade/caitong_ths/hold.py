@@ -1,10 +1,12 @@
 import time
 
+from ctypes import windll
 import pandas as pd
 import win32api
 import win32con
 import win32gui
-from security_trade.util.win32_util import get_item_text
+from pandas.io.clipboard import clipboard_set, clipboard_get
+from security_trade.util.win32_util import get_item_text, GuiPosition, HwndType
 from security_trade.util.ocr_util import ocr_string_from_hwnd
 from security_trade.util.win32_util import pos_in_window_rect
 
@@ -108,41 +110,22 @@ class HoldPanel:
                     self.__edit_set.update(lot=edit)
 
     def get_hold(self):
-        # 将窗口调到前台，激活
+        if windll.user32.OpenClipboard(None):  # 打开剪切板
+            windll.user32.EmptyClipboard()  # 清空剪切板
+            windll.user32.CloseClipboard()  # 关闭剪切板
+
         self.__init_handle()
         # ctrl c
         win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
+        time.sleep(0.01)
         win32gui.PostMessage(self.__data_grid_hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('c'), 0)
+        time.sleep(0.01)
         win32gui.SendMessage(self.__data_grid_hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('c'), 0)
+        time.sleep(0.01)
         win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
+        time.sleep(0.01)
+        return self.__get_order_msg()
 
-        self.__get_order_msg()
-
-        df = pd.read_clipboard(converters={'证券代码': str}).drop(columns=['Unnamed: 15', ])
-        # 返回持仓数量大于 0 的股票
-        return df[df["股票余额"] > 0]
-
-        # win32gui.ShowWindow(self.__parent_trade, win32con.SW_SHOWNORMAL)
-        # win32gui.SetForegroundWindow(self.__parent_trade)
-        # # 使用 windows 消息机制 登录
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
-        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
-        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
-        # time.sleep(0.1)
-        # hwnd = win32gui.FindWindow("#32770", "Save As")
-        # win32gui.ShowWindow(hwnd, win32con.SW_SHOWNORMAL)
-        # win32gui.SetForegroundWindow(hwnd)
-        #
-        # win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32con.VK_MENU, 0)
-        # win32gui.PostMessage(hwnd, win32con.WM_KEYDOWN, win32api.VkKeyScan('s'), 1 << 29)
-        # time.sleep(0.05)
-        # win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32api.VkKeyScan('s'), 0)
-        # win32gui.PostMessage(hwnd, win32con.WM_KEYUP, win32con.VK_MENU, 0)
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, 0, 0)
-        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, 0, 0)
-        # win32api.keybd_event(win32api.VkKeyScan('s'), 0, win32con.KEYEVENTF_KEYUP, 0)
-        # win32api.keybd_event(win32con.VK_LCONTROL, 0, win32con.KEYEVENTF_KEYUP, 0)
 
     def __get_order_msg(self):
         # 判断窗口是不是提示窗口，是，就返回true
@@ -161,7 +144,7 @@ class HoldPanel:
         # 1. 可以根据 验证码弹窗的 OWNER 句柄 = 父句柄 判断
         # 2. 可以根据 弹出窗口大小判断更快，所以按大小判断
         def call_back(handle, dialog_l):
-            _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
+            # _left, _top, _right, _bottom = win32gui.GetWindowRect(handle)
             # (_right - _left == 300) and (_bottom - _top == 195)
             # print(win32gui.GetParent(handle))
             if win32gui.GetClassName(handle) == "#32770" and \
@@ -180,37 +163,45 @@ class HoldPanel:
             # 获得 每个 dialog 句柄的子句柄，判断出是 提示 弹出窗
 
             if len(dialog_list) > 1:
+                # todo 关闭所有，重新发送
+                print("对话窗口多于1个")
                 exit(-1)
             # 如果没有提示信息窗口，而存在委托窗口，判断无误下单后 退出
             if len(dialog_list) == 0:
-                time.sleep(0.01)
-                continue
+                txt = clipboard_get()
+                if (len(txt) > 0):
+                    df = pd.read_clipboard(converters={'证券代码': str})
+                    # 返回持仓数量大于 0 的股票
+                    return df[df["股票余额"] > 0]
+                else:
+                    time.sleep(0.1)
+                    continue
 
             if len(dialog_list) == 1:
-                prompt = dialog_list[0]
-                prompt_info = {}
-                prompt_sons = []
-                _left, _top, _right, _bottom = win32gui.GetWindowRect(prompt)
-                input_pos = [_left + (_right - _left) * 0.3991, _top + (_bottom - _top) * 0.5504]
-                image_pos = [_left + (_right - _left) * 0.6362, _top + (_bottom - _top) * 0.5504]
-
-                win32gui.EnumChildWindows(prompt, lambda handle, param: param.append(handle), prompt_sons)
-                for prompt_son in prompt_sons:
-                    if win32gui.GetClassName(prompt_son) == 'Static' and pos_in_window_rect(image_pos, win32gui.GetWindowRect(prompt_son)):
-                        prompt_info.update(image=prompt_son)
-                    elif win32gui.GetClassName(prompt_son) == 'Edit' and pos_in_window_rect(input_pos, win32gui.GetWindowRect(prompt_son)):
-                        prompt_info.update(input=prompt_son)
-                    txt = win32gui.GetWindowText(prompt_son)
-                    if txt == "":
-                        txt = get_item_text(prompt_son)
-                    elif txt == "确定":
-                        prompt_info.update(confirm_btn=prompt_son)
+                dialog_hwnd, pic_hwnd, input_hwnd,button_hwnd  = dialog_list[0], -1, -1,-1
+                dialog_sons = []
+                win32gui.EnumChildWindows(dialog_hwnd, lambda handle, param: param.append(handle), dialog_sons)
+                dialog_rect = win32gui.GetWindowRect(dialog_hwnd)
+                #  113x45
+                pic = GuiPosition(HwndType.Static, 227, 118, 75, 30)
+                # 157x39
+                input_box = GuiPosition(HwndType.Edit, 114 ,120, 105, 26)
+                # 像素大小 / 屏幕缩放比例： 110x48  1.5 -> 73x32
+                button = GuiPosition(HwndType.Button, 117, 198, 73, 32)
+                for dialog in dialog_sons:
+                    if pos_in_window_rect(pic, dialog_rect, dialog):
+                        pic_hwnd = dialog
+                    elif pos_in_window_rect(input_box, dialog_rect, dialog):
+                        input_hwnd = dialog
+                    elif pos_in_window_rect(button, dialog_rect, dialog):
+                        button_hwnd = dialog
 
                 # 提示  弹出框, 使用ocr识别
-                identify_code = ocr_string_from_hwnd(prompt_info["image"], expand=10)
-                win32gui.SendMessage(prompt_info["input"], win32con.WM_SETTEXT, None, identify_code)
-                win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONDOWN, None, None)
-                win32api.PostMessage(prompt_info["confirm_btn"], win32con.WM_LBUTTONUP, None, None)
+                identify_code = "1234"
+                identify_code = ocr_string_from_hwnd(pic_hwnd, expand=10)
+                win32gui.SendMessage(input_hwnd, win32con.WM_SETTEXT, None, identify_code)
+                win32api.PostMessage(button_hwnd, win32con.WM_LBUTTONDOWN, None, None)
+                win32api.PostMessage(button_hwnd, win32con.WM_LBUTTONUP, None, None)
                 return
 
 

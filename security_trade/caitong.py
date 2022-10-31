@@ -137,8 +137,8 @@ def handle_notice(trade_hwnd, stock_code, price, lot):
 
 if __name__ == '__main__':
     from caitong_ths.login import login
-    login()
-    trade_api = TradeApi()
+    hwnd = login()
+    trade_api = TradeApi(trade_hwnd=hwnd)
     i = time.time()
     # for j in range(0, 5):
     # msg = trade_api.buy("600029", 7.00, 1)

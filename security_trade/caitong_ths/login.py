@@ -4,7 +4,7 @@ import time
 import win32api
 import win32gui
 import win32con
-from security_trade.util.ocr_util import ocr_string_from_hwnd
+# from security_trade.util.ocr_util import ocr_string_from_hwnd
 from security_trade.util.win32_util import pos_in_window_rect
 
 
@@ -75,18 +75,19 @@ def get_useful_handle(login_hwnd):
     return handles
 
 
-def is_login() -> bool:
+def is_login() -> int:
     hwnd_list = []
     win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
     for hwnd in hwnd_list:
-        if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:400000" in win32gui.GetClassName(hwnd):
-            return True
-    return False
+        if win32gui.GetWindowText(hwnd) == "网上股票交易系统5.0" and "Afx:" in win32gui.GetClassName(hwnd):
+            return hwnd
+    return -1
 
 
 def login(username=None, password=None, config=None):
-    if is_login():
-        return
+    hwnd = is_login()
+    if hwnd > 0:
+        return hwnd
     if config is None:
         conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
         with open(conf_path) as f:
@@ -111,7 +112,7 @@ def login(username=None, password=None, config=None):
     # 使用 windows 消息机制 登录
     win32gui.SendMessage(handles["username_hwnd"], win32con.WM_SETTEXT, None, username)
     win32gui.SendMessage(handles["password_hwnd"], win32con.WM_SETTEXT, None, password)
-    identify_code = ocr_string_from_hwnd(handles["identify_img_hwnd"])
+    # identify_code = ocr_string_from_hwnd(handles["identify_img_hwnd"])
     win32gui.SendMessage(handles["identify_hwnd"], win32con.WM_SETTEXT, None, identify_code)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONDOWN, None, None)
     win32gui.SendMessage(handles["login_btn_hwnd"], win32con.WM_LBUTTONUP, None, None)

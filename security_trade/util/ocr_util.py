@@ -2,7 +2,7 @@ import os
 import win32gui
 import win32ui
 import win32con
-from aip import AipOcr
+# from aip import AipOcr
 import json
 
 
@@ -10,8 +10,8 @@ def cap_img(hwnd=None, expand=0):
     # 获取句柄窗口的大小信息
     # 可以通过修改该位置实现自定义大小截图
     left, top, right, bot = win32gui.GetWindowRect(hwnd)
-    w = right - left + expand
-    h = bot - top
+    w = right - left + expand + 10
+    h = bot - top + expand
 
     # 返回句柄窗口的设备环境、覆盖整个窗口，包括非客户区，标题栏，菜单，边框
     hwndDC = win32gui.GetWindowDC(hwnd)
@@ -70,10 +70,12 @@ class Singleton(object):
 
 
 conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
-with open(conf_path) as f:
-    config = json.load(f)
-baidu_ocr = config["baidu-ocr-config"]
-client = AipOcr(**baidu_ocr)
+
+
+# with open(conf_path) as f:
+#     config = json.load(f)
+# baidu_ocr = config["baidu-ocr-config"]
+# client = AipOcr(**baidu_ocr)
 
 
 def img_to_str(image_path):

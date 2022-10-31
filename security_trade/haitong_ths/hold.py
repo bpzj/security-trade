@@ -112,7 +112,7 @@ def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
             continue
 
         if len(dialog_list) == 1:
-            dialog_hwnd, pic_hwnd, input_hwnd = dialog_list[0], -1, -1
+            dialog_hwnd, pic_hwnd, input_hwnd,button_hwnd  = dialog_list[0], -1, -1,-1
             dialog_sons = []
             win32gui.EnumChildWindows(dialog_hwnd, lambda handle, param: param.append(handle), dialog_sons)
             dialog_rect = win32gui.GetWindowRect(dialog_hwnd)
