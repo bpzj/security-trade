@@ -31,7 +31,10 @@ class LoginWindow:
     __login_title = '用户登录'
     __login_win_class = '#32770'
 
-    def __init__(self, json_file=None, username=None, password=None, comm_password=None, exe_path=None):
+    def __init__(self):
+        pass
+
+    def __init_params(self, json_file=None, username=None, password=None, comm_password=None, exe_path=None):
         if json_file:
             with open(json_file, encoding='utf-8') as f:
                 config = json.load(f)
@@ -71,11 +74,12 @@ class LoginWindow:
         else:
             self.__login_hwnd = login_hwnd
 
-    def login(self):
+    def login(self, config_file):
         global username_hwnd, password_hwnd, comm_password_hwnd, login_btn_hwnd
         if login_window_open():
             return
         else:
+            self.__init_params(json_file=config_file)
             # 打开登录窗口
             self.__open_login_windows()
 

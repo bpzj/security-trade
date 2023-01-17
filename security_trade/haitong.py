@@ -169,8 +169,8 @@ if __name__ == '__main__':
     from haitong_ths.login import LoginWindow
 
     conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "security_trade\\ht_config.json")
-    loginWindow = LoginWindow(json_file=conf_path)
-    loginWindow.login()
+    loginWindow = LoginWindow()
+    loginWindow.login(conf_path)
 
     trade_api = TradeApi()
     i = time.time()
