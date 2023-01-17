@@ -33,7 +33,7 @@ def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
             win32gui.EnumChildWindows(dialog_hwnd, lambda handle, param: param.append(handle), dialog_sons)
             dialog_rect = win32gui.GetWindowRect(dialog_hwnd)
             pic = GuiPosition(HwndType.Static, 186, 89, 81, 23)
-            input_box = GuiPosition(HwndType.Edit, 93, 90, 86, 20)
+            input_box = GuiPosition(HwndType.Edit, 93, 90, 85, 19)
             button = GuiPosition(HwndType.Button, 96, 149, 60, 24)
             for dialog in dialog_sons:
                 if pos_in_window_rect(pic, dialog_rect, dialog):

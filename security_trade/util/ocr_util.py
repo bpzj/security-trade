@@ -2,8 +2,48 @@ import os
 import win32gui
 import win32ui
 import win32con
-# from aip import AipOcr
 import json
+import requests
+import base64
+
+# 保证兼容python2以及python3
+from urllib.request import urlopen
+from urllib.request import Request
+from urllib.error import URLError
+from urllib.parse import urlencode
+
+import ssl
+
+
+def fetch_token():
+    """获取token"""
+    # 防止https证书校验不正确
+    ssl._create_default_https_context = ssl._create_unverified_context
+    API_KEY = 'y1IYSpwIdNjHoiYHOAcp93QX'
+    SECRET_KEY = 'TneWvhXl92p95zndwpBa872RXalZuBZk'
+    OCR_URL = "https://aip.baidubce.com/rest/2.0/ocr/v1/accurate_basic"
+    TOKEN_URL = 'https://aip.baidubce.com/oauth/2.0/token'
+    params = {'grant_type': 'client_credentials', 'client_id': API_KEY, 'client_secret': SECRET_KEY}
+    post_data = urlencode(params)
+    post_data = post_data.encode('utf-8')
+    req = Request(TOKEN_URL, post_data)
+    try:
+        f = urlopen(req, timeout=5)
+        result_str = f.read()
+    except URLError as err:
+        print(err)
+    result_str = result_str.decode()
+
+    result = json.loads(result_str)
+
+    if ('access_token' in result.keys() and 'scope' in result.keys()):
+        if not 'brain_all_scope' in result['scope'].split(' '):
+            print('please ensure has check the  ability')
+            exit()
+        return result['access_token']
+    else:
+        print('please overwrite the correct API_KEY and SECRET_KEY')
+        exit()
 
 
 def cap_img(hwnd=None, expand=0):
@@ -57,34 +97,29 @@ def cap_img(hwnd=None, expand=0):
     win32gui.ReleaseDC(hwnd, hwndDC)
 
 
-class Singleton(object):
-    _instance = None
-
-    @staticmethod
-    def get_instance():
-        cls = __class__
-
-        if cls._instance is None:
-            cls._instance = super(cls, cls).__new__(cls)
-        return cls._instance
-
-
 conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "config.json")
 
 
-# with open(conf_path) as f:
-#     config = json.load(f)
-# baidu_ocr = config["baidu-ocr-config"]
-# client = AipOcr(**baidu_ocr)
+# client_id 为官网获取的AK， client_secret 为官网获取的SK
+# 百度ocr 数字识别  https://cloud.baidu.com/doc/OCR/s/Ok3h7y1vo
+
+# 二进制方式打开图片文件
 
 
 def img_to_str(image_path):
-    with open(image_path, 'rb') as fp:
-        image = fp.read()
-    result = client.basicGeneral(image)
+    f = open(image_path, 'rb')
+    img = base64.b64encode(f.read())
+    f.close()
 
-    if 'words_result' in result:
-        return '\n'.join([w['words'] for w in result['words_result']])
+    request_url = "https://aip.baidubce.com/rest/2.0/ocr/v1/numbers"
+    params = {"image": img}
+    access_token = fetch_token()
+    request_url = request_url + "?access_token=" + access_token
+    headers = {'content-type': 'application/x-www-form-urlencoded'}
+    response = requests.post(request_url, data=params, headers=headers)
+    if response:
+        print(response.json())
+        return '\n'.join([w['words'] for w in response.json()['words_result']])
 
 
 def ocr_string_from_hwnd(hwnd, expand=0):
@@ -93,4 +128,5 @@ def ocr_string_from_hwnd(hwnd, expand=0):
 
 
 if __name__ == '__main__':
-    print(ocr_string_from_hwnd(0x002008D6))
+    print(img_to_str('C:\\Users\\Administrator\\Desktop\\code\\security-trade\\security_trade\\screen.bmp'))
+    # print(ocr_string_from_hwnd(0x002008D6))
