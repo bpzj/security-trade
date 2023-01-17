@@ -112,5 +112,5 @@ class LoginWindow:
 
 if __name__ == '__main__':
     conf_path = os.path.join(os.path.dirname(os.path.dirname(__file__)), "ht_config.json")
-    login = LoginWindow(json_file=conf_path)
-    login.login()
+    login = LoginWindow()
+    login.login(conf_path)
