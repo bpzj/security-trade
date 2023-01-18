@@ -44,7 +44,6 @@ def handle_verify(parent_trade_hwnd, hold_panel_hwnd, data_grid_hwnd):
                     button_hwnd = dialog
 
             # todo 验证码弹框, 使用ocr识别
-            identify_code = "1234"
             identify_code = ocr_string_from_hwnd(pic_hwnd, expand=10)
             win32gui.SendMessage(input_hwnd, win32con.WM_SETTEXT, None, identify_code)
             win32api.PostMessage(button_hwnd, win32con.WM_LBUTTONDOWN, None, None)
