@@ -87,3 +87,8 @@ def get_item_text(hwnd, max_len=4):
         # 否则把缓冲区扩大一倍重试
         else:
             max_len *= 2
+
+
+if __name__ == '__main__':
+    txt = get_item_text(0x00080D20)
+    print(txt)
