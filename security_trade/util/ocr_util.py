@@ -14,6 +14,8 @@ from urllib.parse import urlencode
 
 import ssl
 
+from cnocr import CnOcr
+
 
 def fetch_token():
     """获取token"""
@@ -51,7 +53,7 @@ def cap_img(hwnd=None, expand=0):
     # 可以通过修改该位置实现自定义大小截图
     left, top, right, bot = win32gui.GetWindowRect(hwnd)
     w = right - left + expand + 10
-    h = bot - top + expand
+    h = bot - top + expand + 5
 
     # 返回句柄窗口的设备环境、覆盖整个窗口，包括非客户区，标题栏，菜单，边框
     hwndDC = win32gui.GetWindowDC(hwnd)
@@ -122,11 +124,19 @@ def img_to_str(image_path):
         return '\n'.join([w['words'] for w in response.json()['words_result']])
 
 
+def img_to_str_local(image_path):
+    ocr = CnOcr(rec_model_name='densenet_lite_136-fc', det_model_name='naive_det', cand_alphabet='0123456789')
+    out = ocr.ocr(image_path)
+    if len(out) == 1:
+        return out[0].get('text')
+
+
 def ocr_string_from_hwnd(hwnd, expand=0):
     cap_img(hwnd, expand)
-    return img_to_str("screen.bmp")
+    return img_to_str_local("screen.bmp")
 
 
 if __name__ == '__main__':
-    print(img_to_str('C:\\Users\\Administrator\\Desktop\\code\\security-trade\\security_trade\\screen.bmp'))
+    cap_img(0x00070CA8, 0)
+    # print(img_to_str('C:\\Users\\Administrator\\Desktop\\code\\security-trade\\security_trade\\screen.bmp'))
     # print(ocr_string_from_hwnd(0x002008D6))

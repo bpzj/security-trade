@@ -1,3 +1,4 @@
 # win32gui
 pywin32
 pandas
+cnocr
