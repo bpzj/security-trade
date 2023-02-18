@@ -82,10 +82,17 @@ def is_login(gui_config) -> int:
     win32gui.EnumWindows(lambda handle, param: param.append(handle), hwnd_list)
     for hwnd in hwnd_list:
         t = not gui_config['title'] or win32gui.GetWindowText(hwnd) == gui_config['title']
-        c = not gui_config['class'] or gui_config['class'] in win32gui.GetClassName(hwnd)
+        c = not gui_config['class'] or class_contains(win32gui.GetClassName(hwnd), gui_config['class'])
         if t and c:
             return hwnd
     return -1
+
+
+def class_contains(class_name, class_name_list):
+    for l in class_name_list:
+        if l not in class_name:
+            return False
+    return True
 
 
 def login(username=None, password=None, config=None):

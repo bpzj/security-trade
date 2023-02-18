@@ -51,23 +51,24 @@ class GuiPosition:
 
 def pos_in_window_rect(pos_scale: GuiPosition, parent_rect, fit_rect_hwnd):
     left, top, right, bottom = win32gui.GetWindowRect(fit_rect_hwnd)
-    left_real = parent_rect[0] + pos_scale.x_space
-    right_real = left_real + pos_scale.x_length
-    top_real = parent_rect[1] + pos_scale.y_space
-    bottom_real = top_real + pos_scale.y_height
+    left_expect = parent_rect[0] + pos_scale.x_space
+    right_expect = left_expect + pos_scale.x_length
+    top_expect = parent_rect[1] + pos_scale.y_space
+    bottom_expect = top_expect + pos_scale.y_height
 
     # 调试: 打印出所需参数，使用 spy++ 找到定位到句柄，从打印出的参数里根据句柄值搜索
-    # print('{:08X}'.format(fit_rect_hwnd))
-    # print(win32gui.GetClassName(fit_rect_hwnd))
-    # print(get_item_text(fit_rect_hwnd))
-    # x_space = left - parent_rect[0]
-    # y_space = top - parent_rect[1]
-    # x_length = right - left
-    # y_length = bottom - top
-    # print(x_space, ',', y_space, ',', x_length, ',', y_length)
+    if False:
+        print('{:08X}'.format(fit_rect_hwnd))
+        print(win32gui.GetClassName(fit_rect_hwnd))
+        print(get_item_text(fit_rect_hwnd))
+        x_space = left - parent_rect[0] - 1
+        y_space = top - parent_rect[1] - 1
+        x_length = right - left + 2
+        y_length = bottom - top + 2
+        print(x_space, ',', y_space, ',', x_length, ',', y_length)
 
     if win32gui.GetClassName(fit_rect_hwnd) == pos_scale.gui_type.value:
-        return left_real == left and right_real == right and top == top_real and bottom == bottom_real
+        return left_expect <= left and right <= right_expect and top_expect <= top and bottom <= bottom_expect
     return False
 
 

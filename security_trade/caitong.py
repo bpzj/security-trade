@@ -1,3 +1,4 @@
+import re
 from multiprocessing import Process
 import time
 from ctypes import windll
@@ -471,12 +472,18 @@ class HoldPanel:
         p = Process(target=handle_verify, args=(self.__parent_trade, self.__hold_panel_hwnd, self.__data_grid_hwnd))
         p.start()
         p.join()
-        # df = pd.read_clipboard(converters={'证券代码': str}).drop(
-        #     columns=['冻结数量', '交易市场', '股东帐户', '汇率', '成本价港币', '成本价港币', '买入成本价港币', '买入在途数量', '卖出在途数量', 'Unnamed: 17', ])
+        df = pd.read_clipboard(converters={'证券代码': lambda x: re.sub('[^0-9]', '', x)})
+        df = df[['证券代码', '证券名称', '股票余额', '可用余额', '冻结数量', '盈亏', '盈亏比例(%)', '买入成本', '市值', '成本价', '市价']]
+        # .drop(
+        # columns=['冻结数量', '交易市场', '股东帐户', '汇率', '成本价港币', '成本价港币', '买入成本价港币', '买入在途数量', '卖出在途数量', 'Unnamed: 17', ])
         # 返回持仓数量大于 0 的股票
-        # return df[df["股票余额"] > 0]
+        return df[df["股票余额"] > 0]
         # todo return pd.read_clipboard()
-        return ''
+        # return ''
+
+
+def code_converter(object):
+    str(object)
 
 
 class TradeApi:
